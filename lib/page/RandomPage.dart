@@ -1,0 +1,118 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
+import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
+import 'package:wallpaperdownloader/common/style/Styles.dart';
+import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
+
+///随机
+class RandomPage extends StatefulWidget {
+  final String cat;
+
+  const RandomPage({Key key, this.cat}) : super(key: key);
+
+  @override
+  RandomPageState createState() => new RandomPageState();
+}
+
+class RandomPageState extends State<RandomPage> {
+  ScrollController scrollController =
+      new ScrollController(initialScrollOffset: 0);
+
+  int page = 1;
+  int load = 0;
+
+  bool loading = true;
+
+  ///信息列表
+  List<PicInfo> imgList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    scrollController.addListener(() {
+      var px = scrollController.position.pixels;
+      if (px == scrollController.position.maxScrollExtent) {
+        onLoadMore();
+      }
+    });
+    initData(page);
+  }
+
+  ///当整个页面dispose时，记得把控制器也dispose掉，释放内存
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  String operType = 'random';
+
+  ///加载数据
+  Future<void> initData(int page) async {
+    Map<String, String> params = {
+      'page': page.toString(),
+      'size': '20',
+      'operType': operType,
+    };
+    ApiUtil.getList(context, params, successCallBack, errorCallBack);
+  }
+
+  ///刷新
+  Future<void> onRefresh() async {
+    setState(() {
+      page = 1;
+      load = 1;
+    });
+    initData(page);
+  }
+
+  ///加载更多
+  onLoadMore() {
+    if (load == 3) return;
+    setState(() {
+      load = 2;
+    });
+    page++;
+    initData(page);
+  }
+
+  ///成功方法处理
+  void successCallBack(res) {
+    if (res['code'] == '1') {
+      if (page == 1) {
+        imgList = [];
+      }
+      setState(() {
+        loading = false;
+        for (int i = 0; i < res['resBody']['records'].length; i++) {
+          imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+        }
+      });
+
+      if (res['resBody']['records'] == null ||
+          res['resBody']['records'].length == 0) {
+        load = 3;
+      } else {
+        load = 0;
+      }
+    } else {
+      WidgetUtil.showToast(msg: res['message']);
+    }
+  }
+
+  ///失败处理
+  void errorCallBack() {
+    setState(() {
+      loading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return WidgetUtil.getListWidget(
+        onRefresh, loading, scrollController, imgList, operType, load);
+  }
+}
