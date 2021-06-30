@@ -1,14 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
+import 'package:flutter_native_admob/native_admob_controller.dart';
+import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:wallpaperdownloader/common/config/Config.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
+import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
-import 'package:wallpaperdownloader/page/CommonState.dart';
-import 'package:wallpaperdownloader/page/widget/AppBarWidget.dart';
+import 'package:wallpaperdownloader/page/SearchPage.dart';
 
 class CatPicListPage extends StatefulWidget {
   final String cat;
@@ -31,6 +36,8 @@ class CatPicListPageState extends State<CatPicListPage> {
   ///信息列表
   List<PicInfo> imgList = [];
 
+  final _nativeAdController = NativeAdmobController();
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +53,8 @@ class CatPicListPageState extends State<CatPicListPage> {
   ///当整个页面dispose时，记得把控制器也dispose掉，释放内存
   @override
   void dispose() {
+    _nativeAdController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -79,7 +88,7 @@ class CatPicListPageState extends State<CatPicListPage> {
     page++;
     initData(page);
   }
-
+  int nativeAdCount = 0;
   ///成功方法处理
   void successCallBack(res) {
     if (res['code'] == '1') {
@@ -90,6 +99,14 @@ class CatPicListPageState extends State<CatPicListPage> {
         loading = false;
         for (int i = 0; i < res['resBody']['records'].length; i++) {
           imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+          if (imgList.length == Config.loadAdCount) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          } else if (imgList.length > Config.loadAdCount &&
+              (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          }
         }
       });
 
@@ -114,26 +131,30 @@ class CatPicListPageState extends State<CatPicListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: SetColors.black,
       body: Column(
         children: <Widget>[
           Container(
-            margin:
-                EdgeInsets.only(top: CommonUtil.getStatusBarHeight(context)),
+            height: 40.0,
+            margin: EdgeInsets.only(
+                top: CommonUtil.getStatusBarHeight(context), bottom: 5.0),
             child: Row(
               children: [
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: Icon(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      margin: EdgeInsets.only(left: 10.0),
+                      color: SetColors.transparent,
+                      alignment: Alignment.centerLeft,
+                      child: Icon(
                         Icons.arrow_back,
                         color: SetColors.white,
-                        size: 30.0,
+                        size: 35.0,
                       ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
                     ),
                   ),
                 ),
@@ -145,23 +166,25 @@ class CatPicListPageState extends State<CatPicListPage> {
                       widget.cat,
                       style: TextStyle(
                           fontSize: SetConstants.bigTextSize,
-                          color: SetColors.black),
+                          color: SetColors.white),
                     ),
                   ),
                 ),
                 Expanded(
                   flex: 1,
-                  child: Container(
-                    alignment: Alignment.centerRight,
-                    child: new IconButton(
-                      icon: new Icon(
-                        Icons.search,
-                        color: SetColors.black,
-                        size: 40.0,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (context) {
+                        return SearchPage();
+                      }));
+                    },
+                    child: new Container(
+                      color: SetColors.transparent,
+                      margin: EdgeInsets.only(right: 15.0),
+                      alignment: Alignment.centerRight,
+                      child: SvgPicture.asset('assets/search.svg',
+                          width: 25.0, height: 25.0, color: SetColors.white),
                     ),
                   ),
                 ),
@@ -179,48 +202,100 @@ class CatPicListPageState extends State<CatPicListPage> {
                       crossAxisCount: 3,
                       itemCount: imgList.length,
                       itemBuilder: (context, i) {
+
+                        ///广告
+                        if (imgList[i].id == '-1') {
+                          return Container(
+                            //height: 60,
+                            //width: CommonUtil.getScreenWidth(context),
+                            //padding: EdgeInsets.all(10),
+                            //margin: EdgeInsets.only(bottom: 20.0),
+                            alignment: Alignment.center,
+                            child: NativeAdmob(
+                              loading: Center(
+                                child: CircularProgressIndicator(
+                                  color: SetColors.white,
+                                ),
+                              ),
+                              adUnitID: AdMobService.nativeAdGeneralUnitId,
+                              numberAds: 5,
+                              //controller: _nativeAdController,
+                              type: NativeAdmobType.full,
+                              options: NativeAdmobOptions(
+                                headlineTextStyle: NativeTextStyle(
+                                  fontSize: 16,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+
                         String imgPath = WidgetUtil.getPicUrl(imgList[i]);
                         return GestureDetector(
                           onTap: () {
                             //AdMobService.showInterstitialAd();
-                            WidgetUtil.goDetailPage(
-                                context, imgList[i].id, operType,
-                                cat: widget.cat);
+                            WidgetUtil.goDetailPage(context, operType,
+                                picInfo: imgList[i], cat: widget.cat);
                           },
-                          child: new Material(
-                            //elevation: 8.0,
-                            //borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                            child: new CachedNetworkImage(
-                              imageUrl: imgPath,
-                              imageBuilder: (context, imageProvider) =>
-                                  Container(
-                                margin: EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8.0)),
-                                  image: DecorationImage(
-                                    image: imageProvider,
-                                    fit: BoxFit.fill,
-                                  ),
+                          child: CachedNetworkImage(
+                            imageUrl: imgPath,
+                            imageBuilder: (context, imageProvider) => Container(
+                              margin: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: SetColors.black,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                                image: DecorationImage(
+                                  image: imageProvider,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                              placeholder: (context, url) => Container(
-                                margin: EdgeInsets.all(2),
-                                decoration: BoxDecoration(
-                                  color: SetColors.darkGrey,
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8.0)),
-                                ),
-                                child: CupertinoActivityIndicator(),
+                            ),
+                            placeholder: (context, url) => Container(
+                              margin: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: SetColors.black,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
                               ),
-                              errorWidget: (context, url, error) =>
-                                  Icon(Icons.error),
+                              child: Container(
+                                color: SetColors.mainColor,
+                                width: 40.0,
+                                height: 40.0,
+
+                                ///限制大小无效是设置此属性
+                                alignment: Alignment.center,
+                                child: CircularProgressIndicator(
+                                  color: SetColors.white,
+                                ),
+                              ),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              margin: EdgeInsets.all(2),
+                              decoration: BoxDecoration(
+                                color: SetColors.mainColor,
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                              ),
+
+                              ///限制大小无效是设置此属性
+                              alignment: Alignment.center,
+                              child: SvgPicture.asset('assets/pic_error.svg',
+                                  width: 40.0,
+                                  height: 40.0,
+                                  color: SetColors.white),
                             ),
                           ),
                         );
                       },
                       staggeredTileBuilder: (int index) {
-                        return StaggeredTile.count(1, 2); //横轴和纵轴的数量,控制瀑布流效果
+                        if (((index + 1) % (Config.loadAdCount + 1) == 0)) {
+                          return StaggeredTile.count(3, 2);
+                        } else {
+                          return StaggeredTile.count(1, 1.5);
+                        }
+                        //横轴和纵轴的数量,控制瀑布流效果
                       },
                       //mainAxisSpacing: 8.0,
                       //crossAxisSpacing: 8.0,
@@ -228,6 +303,29 @@ class CatPicListPageState extends State<CatPicListPage> {
             ),
           ),
           WidgetUtil.getListLoadMoreOffstage(load),
+          Container(
+            height: 60,
+            width: CommonUtil.getScreenWidth(context),
+            //padding: EdgeInsets.all(10),
+            //margin: EdgeInsets.only(bottom: 20.0),
+            child: NativeAdmob(
+              loading: Center(
+                child: CircularProgressIndicator(
+                  color: SetColors.white,
+                ),
+              ),
+              adUnitID: AdMobService.nativeAdGeneralUnitId,
+              numberAds: 5,
+              controller: _nativeAdController,
+              type: NativeAdmobType.banner,
+              options: NativeAdmobOptions(
+                headlineTextStyle: NativeTextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

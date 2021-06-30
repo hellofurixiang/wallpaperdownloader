@@ -5,12 +5,8 @@ import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
-import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
-import 'package:wallpaperdownloader/common/local/MySelfInfo.dart';
 import 'package:wallpaperdownloader/common/net/Code.dart';
 import 'package:wallpaperdownloader/common/style/StringZh.dart';
-import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
-import 'package:wallpaperdownloader/common/utils/DeviceUtil.dart';
 import 'package:wallpaperdownloader/common/utils/LogUtils.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
 

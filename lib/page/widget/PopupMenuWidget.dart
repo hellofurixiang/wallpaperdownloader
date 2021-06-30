@@ -14,12 +14,14 @@ class PopupMenuWidget extends StatefulWidget {
   final double x;
   final double y;
 
+  final bool infoOffstage;
+
   PopupMenuWidget(
       {Key key,
       @required this.itemList,
       @required this.callBack,
       this.x,
-      this.y})
+      this.y, this.infoOffstage})
       : super(key: key);
 
   @override
@@ -48,7 +50,7 @@ class PopupMenuWidgetState extends State<PopupMenuWidget> {
           height: height,
           child: new Text(
             widget.itemList[i],
-            style: new TextStyle(fontSize: SetConstants.normalTextSize),
+            style: new TextStyle(fontSize: SetConstants.normalTextSize,color: SetColors.mainColor),
           ),
         ),
       ));
@@ -78,7 +80,7 @@ class PopupMenuWidgetState extends State<PopupMenuWidget> {
           ),
           new Positioned(
             right:  60.0,
-            bottom: 60.0,
+            bottom: 70.0+(widget.infoOffstage?0:70),
             child: new Container(
               alignment: Alignment.center,
               color: Colors.white,

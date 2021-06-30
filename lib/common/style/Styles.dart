@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 class SetColors {
   ///主色调
   static const Color mainColor = Color(mainColorValue);
-  static const int mainColorValue = 0xFF03A9F5;
+  static const int mainColorValue = 0xFF202124;
 
   ///灰色
   static const Color lightLightGrey = Color(0xFFF5F5F5);
   static const Color lightGray = Color(0xFFEDEDED);
   static const Color darkGrey = Color(0xFFBABABA);
   static const Color darkDarkGrey = Color(0xFF8C8C8C);
+  //static const Color dimGray = Color(0xFF202124);
+
+
 
   ///横线颜色灰色
   static const Color lineLightGray = Color(0xFFe0e0e0);

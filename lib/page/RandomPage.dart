@@ -1,11 +1,8 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
-import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
 
 ///随机
@@ -79,6 +76,8 @@ class RandomPageState extends State<RandomPage> {
     initData(page);
   }
 
+  int nativeAdCount = 0;
+
   ///成功方法处理
   void successCallBack(res) {
     if (res['code'] == '1') {
@@ -89,6 +88,14 @@ class RandomPageState extends State<RandomPage> {
         loading = false;
         for (int i = 0; i < res['resBody']['records'].length; i++) {
           imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+          if (imgList.length == Config.loadAdCount) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          } else if (imgList.length > Config.loadAdCount &&
+              (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          }
         }
       });
 

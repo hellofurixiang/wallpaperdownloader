@@ -29,7 +29,7 @@ class StringZh {
 
   static const String logining = '登录中...';
 
-  static const String loading = '努力加载中···';
+  static const String loading = 'loading...';
 
   static const String hard_loading = '玩命加载中...';
 

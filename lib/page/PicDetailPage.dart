@@ -1,43 +1,34 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:share/share.dart';
 import 'package:wallpaper/wallpaper.dart';
+import 'package:wallpaper_manager/wallpaper_manager.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
 import 'package:wallpaperdownloader/common/db/provider/HangInfoProvider.dart';
+import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
 import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/modal/HangInfoEntity.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
+import 'package:wallpaperdownloader/common/modal/WatchAdEntity.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
-import 'package:wallpaperdownloader/common/style/StringZh.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
+import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
-import 'package:wallpaperdownloader/page/AdMobService.dart';
+import 'package:wallpaperdownloader/common/utils/plugin/EquipmentPlugin.dart';
 import 'package:wallpaperdownloader/page/PicEditPage.dart';
-import 'package:wallpaperdownloader/page/CommonState.dart';
 import 'package:wallpaperdownloader/page/widget/PopupMenuWidget.dart';
 
 class PicDetailPage extends StatefulWidget {
-  final PicInfo picInfo;
-
-  final bool favoritBo;
-
-  final bool advertisingBo;
+  final String id;
 
   final String operType;
   final String cat;
   final String keyword;
 
-  const PicDetailPage(
-      {Key key,
-      this.picInfo,
-      this.favoritBo: false,
-      this.advertisingBo: true,
-      this.operType,
-      this.cat,
-      this.keyword})
+  const PicDetailPage({Key key, this.operType, this.cat, this.keyword, this.id})
       : super(key: key);
 
   @override
@@ -47,18 +38,33 @@ class PicDetailPage extends StatefulWidget {
 class PicDetailPageState extends State<PicDetailPage>
     with SingleTickerProviderStateMixin {
   HangInfoProvider provider = new HangInfoProvider();
+  WatchAdProvider watchAdProvider = new WatchAdProvider();
 
   bool infoOffstage = true;
 
+  ///观看广告
   bool advertisingBo = true;
 
+  ///收藏
   bool favoriteBo = false;
 
+  ///图片加载控制器
   AnimationController _controller;
 
+  ///预览图片路径
   String imgPath;
 
+  ///下载图片路径
+  String fullPath;
+
+  ///图片信息类
   PicInfo picInfo;
+
+  ///加载状态
+  bool isLoad = true;
+
+  ///本地图片路径
+  String localImgUrl;
 
   @override
   void initState() {
@@ -68,10 +74,7 @@ class PicDetailPageState extends State<PicDetailPage>
         lowerBound: 0.0,
         upperBound: 1.0);
 
-    picInfo = widget.picInfo;
-
-    imgPath =
-        Config.downloadUrl + picInfo.fileName + '_preview.' + picInfo.type;
+    //picInfo = widget.picInfo;
     super.initState();
     initData();
   }
@@ -84,8 +87,50 @@ class PicDetailPageState extends State<PicDetailPage>
   }
 
   initData() async {
-    favoriteBo = widget.favoritBo;
-    advertisingBo = widget.advertisingBo;
+    //favoriteBo = widget.favoritBo;
+    //advertisingBo = widget.advertisingBo;
+
+    //showLoadingDialog(context, text: StringZh.loading);
+    ApiUtil.getDetailInfo(context, {
+      'id': widget.id,
+    }, (res) async {
+      //Navigator.pop(context);
+      if (res['code'] == '1') {
+        PicInfo newPicInfo = PicInfo.fromJson(res['resBody']);
+
+        HangInfoProvider provider = new HangInfoProvider();
+
+        HangInfoEntity vo = await provider.findOne(newPicInfo.id);
+        setState(() {
+          picInfo = newPicInfo;
+          imgPath = Config.downloadUrl +
+              picInfo.fileName +
+              '_preview.' +
+              picInfo.type;
+          fullPath = Config.downloadUrl + picInfo.fileName + '.' + picInfo.type;
+
+          isLoad = false;
+
+          if (vo != null) {
+            if (vo.favorite != null) {
+              favoriteBo = vo.favorite == 1;
+            }
+            if (vo.watchAds != null) {
+              //advertisingBo = vo.watchAds == 1;
+            }
+          } else {
+            if (picInfo.advertising != null && picInfo.advertising) {
+              //advertisingBo = false;
+            }
+          }
+        });
+      } else {
+        WidgetUtil.showToast(msg: res['message']);
+      }
+    }, (err) {
+      Navigator.pop(context);
+      Navigator.pop(context);
+    });
   }
 
   @override
@@ -139,20 +184,70 @@ class PicDetailPageState extends State<PicDetailPage>
     }
   }
 
-  showRewardedAd() {
-    WidgetUtil.showLoadingDialog(context, 'Loading ads...');
-    GlobalInfo.instance.setShowBannerAdState(1);
-    AdMobService.showRewardedAd(context, () {
-      GlobalInfo.instance.setShowBannerAdState(2);
-      changeAdvertising();
-    });
+  showRewardedAd(Function operFun) async {
+    DateTime date = DateTime.now();
+
+    String watchDate =
+        "${date.year.toString()}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+
+    WatchAdEntity watchAdEntity = await watchAdProvider.findOne(watchDate);
+    bool showRewardedAd = false;
+    bool showInterstitialAd = false;
+
+    if (watchAdEntity != null) {
+      if (watchAdEntity.watchRewardedAd == 10 &&
+          watchAdEntity.watchInterstitialAd == 10) {
+        operFun();
+        return;
+      }
+      if (watchAdEntity.watchRewardedAd < 10) {
+        showRewardedAd = true;
+      } else {
+        if (watchAdEntity.watchInterstitialAd < 10) {
+          showInterstitialAd = true;
+        }
+      }
+    } else {
+      showRewardedAd = true;
+    }
+    WidgetUtil.showLoadingDialog(context, text: 'Loading ads...');
+
+    ///GlobalInfo.instance.setShowBannerAdState(1);
+    if (showRewardedAd) {
+      AdMobService.showRewardedAd(context, onAdLoad: () {}, onAdClosed: () {
+        ///GlobalInfo.instance.setShowBannerAdState(2);
+        ///changeAdvertising();
+        watchAdProvider.updateWatchRewardedAd(watchDate);
+        operFun();
+      });
+    } else {
+      AdMobService.showInterstitialAd(
+          onAdLoaded: () {},
+          onAdClosed: () {
+            watchAdProvider.updateWatchInterstitialAd(watchDate);
+            operFun();
+          });
+    }
   }
 
-  Widget getOperWidget(String imgPath) {
+  downloadFile() async {
+    WidgetUtil.showLoadingDialog(context, text: 'download...');
+    //GlobalInfo.instance.setShowBannerAdState(2);
+    String downloadUrl = await CommonUtil.saveImage(context, fullPath);
+    if (downloadUrl.isEmpty) {
+      return;
+    }
+    setState(() {
+      localImgUrl = downloadUrl.replaceAll('file://', '');
+    });
+    EquipmentPlugin.editImg(downloadUrl);
+  }
+
+  Widget getOperWidget() {
     if (!advertisingBo) {
       return GestureDetector(
         onTap: () {
-          showRewardedAd();
+          //showRewardedAd();
         },
         child: Container(
           alignment: Alignment.center,
@@ -188,7 +283,7 @@ class PicDetailPageState extends State<PicDetailPage>
             child: GestureDetector(
               onTap: () {
                 final RenderBox box = context.findRenderObject() as RenderBox;
-                Share.share('wallpaper hd',
+                Share.share(Config.shareStr,
                     sharePositionOrigin:
                         box.localToGlobal(Offset.zero) & box.size);
               },
@@ -204,9 +299,10 @@ class PicDetailPageState extends State<PicDetailPage>
             flex: 1,
             child: GestureDetector(
               onTap: () {
-                WidgetUtil.showConfirmDialog(context, () {
-                  WidgetUtil.showLoadingDialog(context, 'download...');
-                  CommonUtil.saveImage(context, imgPath);
+                WidgetUtil.showConfirmDialog(
+                    context, 'Are you sure want to download this wallpaper?',
+                    () async {
+                  showRewardedAd(downloadFile);
                 });
               },
               child: Image(
@@ -239,9 +335,10 @@ class PicDetailPageState extends State<PicDetailPage>
                           if (menuIndex == 0) {
                             quickApply();
                           } else {
-                            goToDetail();
+                            goToEdit();
                           }
                         },
+                        infoOffstage: infoOffstage,
                       );
                     });
               },
@@ -260,43 +357,49 @@ class PicDetailPageState extends State<PicDetailPage>
 
   double x, y;
 
-  quickApply() {
-    //显示对话框
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: Text('Set this image as wallpaper?'),
-          actions: [
-            FlatButton(
-              child: Text("YES"),
-              onPressed: () async {
-                AdMobService.showRewardedAd(context, () {
-                  setWallpaper();
-                });
-              },
-            )
-          ],
-        );
-      },
-    );
+  quickApply() async {
+    WidgetUtil.showAlertDialog(context, 'Set this image as wallpaper?',
+        () async {
+      showRewardedAd(setWallpaper);
+    });
+
+    /*WidgetUtil.showAlertDialog(context, 'Set this image as wallpaper?',
+        () async {
+      WidgetUtil.showLoadingDialog(context, text: 'Loading ads...');
+      GlobalInfo.instance.setShowBannerAdState(1);
+      AdMobService.showRewardedAd(context, () async {
+        GlobalInfo.instance.setShowBannerAdState(2);
+        WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+        String re = await Wallpaper.bothScreen(imgPath);
+        if (re == 'Both screen') {
+          WidgetUtil.showToast(msg: 'Set wallpaper successfully');
+        } else {
+          WidgetUtil.showToast(msg: 'Set wallpaper error');
+        }
+        Navigator.pop(context);
+      });
+    });*/
   }
 
   setWallpaper() async {
-    Navigator.pop(context);
-    WidgetUtil.showLoadingDialog(context, 'Set wallpaper...');
-    String re = await Wallpaper.bothScreen(imgPath);
-    if (re == 'Both screen') {
+    String re;
+    if (localImgUrl != null) {
+      re = await WallpaperManager.setWallpaperFromFile(
+          localImgUrl, WallpaperManager.BOTH_SCREENS);
+    } else {
+      re = await Wallpaper.bothScreen(fullPath);
+    }
+    if (re == 'Both screen' || re == 'Wallpaper set') {
       WidgetUtil.showToast(msg: 'Set wallpaper successfully');
     } else {
       WidgetUtil.showToast(msg: 'Set wallpaper error');
     }
-    Navigator.pop(context);
   }
 
-  goToDetail() {
+  goToEdit() {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return PicEditPage(
+        localImgUrl: localImgUrl,
         picInfo: picInfo,
       );
     }));
@@ -304,93 +407,76 @@ class PicDetailPageState extends State<PicDetailPage>
     //Navigator.pushNamed(context, 'PicEditPage');
   }
 
-  ///左右滑动切换图片
-  getNextOrPrePicInfo() async {
-    if (widget.operType == 'favorite') {
-      HangInfoProvider provider = new HangInfoProvider();
-
-      HangInfoEntity vo = nextOrPre
-          ? await provider.nextOne(picInfo.id)
-          : await provider.preOne(picInfo.id);
-
-      WidgetUtil.showLoadingDialog(context, StringZh.loading);
-
-      ApiUtil.getDetailInfo(context, {
-        'id': vo.imgId,
-      }, (res) async {
-        Navigator.pop(context);
-        if (res['code'] == '1') {
-          PicInfo nextPicInfo = PicInfo.fromJson(res['resBody']);
-
-          setState(() {
-            picInfo = nextPicInfo;
-            imgPath = Config.downloadUrl +
-                picInfo.fileName +
-                '_preview.' +
-                picInfo.type;
-            if (vo != null) {
-              if (vo.favorite != null) {
-                favoriteBo = vo.favorite == 1;
-              }
-              if (vo.watchAds != null) {
-                advertisingBo = vo.watchAds == 1;
-              }
-            } else {
-              if (picInfo.advertising != null && picInfo.advertising) {
-                advertisingBo = false;
-              }
-            }
-          });
-        } else {
-          WidgetUtil.showToast(msg: res['message']);
-        }
-      }, (err) {
-        Navigator.pop(context);
-      });
-    } else {
-      Map<String, Object> params = {
-        'cat': widget.cat,
-        'id': picInfo.id,
-        'operType': widget.operType,
-        'nextOrPre': nextOrPre,
-        'keyword': widget.keyword
-      };
-
-      ApiUtil.getNextOrPrePicInfo(context, params, (res) async {
-        if (res['code'] == '1') {
-          PicInfo nextPicInfo = PicInfo.fromJson(res['resBody']);
-          HangInfoProvider provider = new HangInfoProvider();
-
-          HangInfoEntity vo = await provider.findOne(picInfo.id);
-
-          setState(() {
-            picInfo = nextPicInfo;
-            imgPath = Config.downloadUrl +
-                picInfo.fileName +
-                '_preview.' +
-                picInfo.type;
-            if (vo != null) {
-              if (vo.favorite != null) {
-                favoriteBo = vo.favorite == 1;
-              }
-              if (vo.watchAds != null) {
-                advertisingBo = vo.watchAds == 1;
-              }
-            } else {
-              if (picInfo.advertising != null && picInfo.advertising) {
-                advertisingBo = false;
-              }
-            }
-          });
-        } else {
-          WidgetUtil.showToast(msg: res['message']);
-        }
-      }, (err) {});
-    }
+  initGestureConfigHandler(ExtendedImageState state) {
+    return GestureConfig(
+        minScale: 0.9,
+        animationMinScale: 0.7,
+        maxScale: 3.0,
+        animationMaxScale: 3.5,
+        speed: 1.0,
+        inertialSpeed: 100.0,
+        initialScale: 1.0,
+        inPageView: false);
   }
 
-  double startDx = 0.0;
-  bool nextOrPre = true;
+  loadStateChanged(ExtendedImageState state) {
+    switch (state.extendedImageLoadState) {
+      case LoadState.loading:
+        _controller.reset();
+        return Container(
+          color: SetColors.mainColor,
+          width: 40.0,
+          height: 40.0,
+
+          ///限制大小无效是设置此属性
+          alignment: Alignment.center,
+          child: CircularProgressIndicator(
+            color: SetColors.white,
+          ),
+        );
+        break;
+
+      ///if you don't want override completed widget
+      ///please return null or state.completedWidget
+      //return null;
+      //return state.completedWidget;
+      case LoadState.completed:
+        _controller.forward();
+        return FadeTransition(
+          opacity: _controller,
+          child: ExtendedRawImage(
+            image: state.extendedImageInfo?.image,
+            fit: BoxFit.contain,
+            width: 300,
+            height: 300,
+          ),
+        );
+        break;
+      case LoadState.failed:
+        _controller.reset();
+        return GestureDetector(
+          child: Container(
+            margin: EdgeInsets.all(2),
+            decoration: BoxDecoration(
+              color: SetColors.mainColor,
+              borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            ),
+
+            ///限制大小无效是设置此属性
+            alignment: Alignment.center,
+            child: SvgPicture.asset('assets/pic_error.svg',
+                width: 40.0, height: 40.0, color: SetColors.white),
+          ),
+          onTap: () {
+            state.reLoadImage();
+          },
+        );
+        break;
+      default:
+        return Container();
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -400,216 +486,173 @@ class PicDetailPageState extends State<PicDetailPage>
         alignment: Alignment.center,
         fit: StackFit.expand, //未定位widget占满Stack整个空间
         children: <Widget>[
-          GestureDetector(
-            onPanStart: (DragStartDetails e) {
-              startDx = e.localPosition.dx;
-            },
-            onPanUpdate: (DragUpdateDetails e) {
-              if (e.localPosition.dx - startDx > 0) {
-                nextOrPre = false;
-              } else {
-                nextOrPre = true;
-              }
-            },
-            onPanEnd: (DragEndDetails e) {
-              getNextOrPrePicInfo();
-            },
-            child: ExtendedImage.network(
-              imgPath,
-              mode: ExtendedImageMode.gesture,
-              loadStateChanged: (ExtendedImageState state) {
-                switch (state.extendedImageLoadState) {
-                  case LoadState.loading:
-                    _controller.reset();
-                    return Container(
-                      width: 50.0,
-                      height: 50.0,
-                      child: CupertinoActivityIndicator(),
-                    );
-                    break;
-
-                  ///if you don't want override completed widget
-                  ///please return null or state.completedWidget
-                  //return null;
-                  //return state.completedWidget;
-                  case LoadState.completed:
-                    _controller.forward();
-                    return FadeTransition(
-                      opacity: _controller,
-                      child: ExtendedRawImage(
-                        image: state.extendedImageInfo?.image,
-                        fit: BoxFit.fill,
-                      ),
-                    );
-                    break;
-                  case LoadState.failed:
-                    _controller.reset();
-                    return GestureDetector(
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: <Widget>[
-                          Image.asset(
-                            "assets/failed.jpg",
-                            fit: BoxFit.fill,
-                          ),
-                          Positioned(
-                            bottom: 0.0,
-                            left: 0.0,
-                            right: 0.0,
-                            child: Text(
-                              "load image failed, click to reload",
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        ],
-                      ),
-                      onTap: () {
-                        state.reLoadImage();
+          isLoad
+              ? WidgetUtil.getEmptyLoadingWidget()
+              : (localImgUrl != null
+                  ? ExtendedImage.file(
+                      File(localImgUrl),
+                      fit: BoxFit.contain,
+                      mode: ExtendedImageMode.gesture,
+                      initGestureConfigHandler: (ExtendedImageState state) {
+                        return initGestureConfigHandler(state);
                       },
-                    );
-                    break;
-                  default:
-                    return Container();
-                    break;
-                }
-              },
-            ),
-          ),
+                      loadStateChanged: (ExtendedImageState state) {
+                        return loadStateChanged(state);
+                      },
+                    )
+                  : ExtendedImage.network(
+                      imgPath,
+                      fit: BoxFit.contain,
+                      mode: ExtendedImageMode.gesture,
+                      cache: true,
+                      /*initGestureConfigHandler: (ExtendedImageState state) {
+                        return initGestureConfigHandler(state);
+                      },*/
+                      //loadStateChanged: (ExtendedImageState state){return loadStateChanged(state);},
+                    )),
           Positioned(
-            top: CommonUtil.getStatusBarHeight(context),
-            left: 0.0,
-            child: Container(
-              color: Colors.transparent,
-              child: IconButton(
-                icon: new Icon(
-                  Icons.arrow_back,
-                  color: SetColors.white,
-                  size: 40.0,
-                ),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
+            top: CommonUtil.getStatusBarHeight(context) + 10.0,
+            left: 10.0,
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pop(context);
+              },
+              child: Container(
+                color: Colors.transparent,
+                child: SvgPicture.asset('assets/back.svg',
+                    width: 35.0, height: 35.0, color: SetColors.white),
               ),
             ),
           ),
           Positioned(
             bottom: 0.0,
             left: 0.0,
-            child: Container(
-              padding: EdgeInsets.all(4.0),
-              width: MediaQuery.of(context).size.width,
-              color: Colors.black.withOpacity(.4),
-              child: Column(
-                children: [
-                  Container(
-                    padding: EdgeInsets.all(10.0),
-                    child: Row(
+            child: isLoad
+                ? Container()
+                : Container(
+                    padding: EdgeInsets.all(4.0),
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.black.withOpacity(.4),
+                    child: Column(
                       children: [
-                        Expanded(
-                          flex: 1,
-                          child: GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                infoOffstage = !infoOffstage;
-                              });
-                            },
-                            child: Container(
-                              child: Text(picInfo.keyword ?? '',
-                                  style: TextStyle(
-                                      color: SetColors.white,
-                                      fontSize: SetConstants.bigTextSize)),
-                            ),
-                          ),
-                        ),
-                        Expanded(
-                          flex: 1,
+                        Container(
+                          padding: EdgeInsets.all(10.0),
                           child: Row(
                             children: [
-                              Expanded(flex: 3, child: getOperWidget(imgPath)),
                               Expanded(
                                 flex: 1,
                                 child: GestureDetector(
                                   onTap: () {
-                                    changeCollection();
-                                    //WidgetUtil.showLoadingDialog(context, 'Loading ads...');
-                                    //showRewardedAd();
+                                    setState(() {
+                                      infoOffstage = !infoOffstage;
+                                    });
                                   },
-                                  child: new Image(
-                                    image:
-                                        new AssetImage('assets/collection.png'),
-                                    width: 30.0,
-                                    height: 30.0,
-                                    color:
-                                        favoriteBo ? Colors.red : Colors.white,
+                                  child: Container(
+                                    child: Text(picInfo.keyword ?? '',
+                                        style: TextStyle(
+                                            color: SetColors.white,
+                                            fontSize:
+                                                SetConstants.bigTextSize)),
                                   ),
+                                ),
+                              ),
+                              Expanded(
+                                flex: 1,
+                                child: Row(
+                                  children: [
+                                    Expanded(flex: 3, child: getOperWidget()),
+                                    Expanded(
+                                      flex: 1,
+                                      child: GestureDetector(
+                                        onTap: () {
+                                          changeCollection();
+                                          //WidgetUtil.showLoadingDialog(context, 'Loading ads...');
+                                          //showRewardedAd();
+                                        },
+                                        child: new Image(
+                                          image: new AssetImage(
+                                              'assets/collection.png'),
+                                          width: 30.0,
+                                          height: 30.0,
+                                          color: favoriteBo
+                                              ? Colors.red
+                                              : Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  Offstage(
-                    offstage: infoOffstage,
-                    child: Container(
-                      padding: EdgeInsets.all(10.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: Column(
+                        Offstage(
+                          offstage: infoOffstage,
+                          child: Container(
+                            padding: EdgeInsets.all(10.0),
+                            child: Row(
                               children: [
-                                Container(
-                                  child: Text('Views',
-                                      style: TextStyle(color: SetColors.white)),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        child: Text('Views',
+                                            style: TextStyle(
+                                                color: SetColors.white)),
+                                      ),
+                                      Container(
+                                        child: Text(
+                                          picInfo.readCount.toString(),
+                                          style:
+                                              TextStyle(color: SetColors.white),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                                Container(
-                                  child: Text(
-                                    picInfo.readCount.toString(),
-                                    style: TextStyle(color: SetColors.white),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        child: Text('Downloads',
+                                            style: TextStyle(
+                                                color: SetColors.white)),
+                                      ),
+                                      Container(
+                                        child: Text(
+                                            picInfo.downloadCount.toString(),
+                                            style: TextStyle(
+                                                color: SetColors.white)),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 1,
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        child: Text('Resolution',
+                                            style: TextStyle(
+                                                color: SetColors.white)),
+                                      ),
+                                      Container(
+                                        child: Text(picInfo.resolution ?? '',
+                                            style: TextStyle(
+                                                color: SetColors.white)),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ],
                             ),
                           ),
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              children: [
-                                Container(
-                                  child: Text('Downloads',
-                                      style: TextStyle(color: SetColors.white)),
-                                ),
-                                Container(
-                                  child: Text(picInfo.downloadCount.toString(),
-                                      style: TextStyle(color: SetColors.white)),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: Column(
-                              children: [
-                                Container(
-                                  child: Text('Resolution',
-                                      style: TextStyle(color: SetColors.white)),
-                                ),
-                                Container(
-                                  child: Text(picInfo.resolution ?? '',
-                                      style: TextStyle(color: SetColors.white)),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            ),
           ),
         ],
       ),

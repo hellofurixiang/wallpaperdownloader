@@ -5,21 +5,26 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
+import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
-import 'package:wallpaperdownloader/common/db/provider/HangInfoProvider.dart';
-import 'package:wallpaperdownloader/common/modal/HangInfoEntity.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
-import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/StringZh.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
+import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
+import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/page/PicDetailPage.dart';
+import 'package:wallpaperdownloader/page/PicPreviewPage.dart';
+import 'package:wallpaperdownloader/page/widget/FeedbackWidget.dart';
+import 'package:wallpaperdownloader/page/widget/SponRatingWidget.dart';
 
 ///控件通用类
 class WidgetUtil {
   ///加载框
-  static void showLoadingDialog(BuildContext context, String text) {
+  static void showLoadingDialog(BuildContext context, {String text}) {
     showDialog<Null>(
         context: context, //BuildContext对象
         barrierDismissible: false,
@@ -32,8 +37,8 @@ class WidgetUtil {
               type: MaterialType.transparency, //透明类型
               child: new Center(
                 //保证控件居中效果
-                child: new SizedBox(
-                  width: 120.0,
+                child: Container(
+                  width: 150.0,
                   height: 120.0,
                   child: new Container(
                     decoration: ShapeDecoration(
@@ -44,12 +49,23 @@ class WidgetUtil {
                         ),
                       ),
                     ),
-                    child: new Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.center,
+                    child: new Row(
+                      //mainAxisAlignment: MainAxisAlignment.center,
+                      //crossAxisAlignment: CrossAxisAlignment.center,
                       children: <Widget>[
-                        new CircularProgressIndicator(
-                          color: SetColors.gray,
+                        CircularProgressIndicator(
+                          color: SetColors.white,
+                        ),
+                        Expanded(
+                          child: text == null
+                              ? Container()
+                              : Container(
+                                  margin: EdgeInsets.only(left: 5.0),
+                                  child: Text(
+                                    text,
+                                    style: TextStyle(color: SetColors.darkGrey),
+                                  ),
+                                ),
                         ),
                       ],
                     ),
@@ -125,7 +141,7 @@ class WidgetUtil {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: <Widget>[
                 new CircularProgressIndicator(
-                  color: SetColors.gray,
+                  color: SetColors.white,
                 ),
               ],
             ),
@@ -136,28 +152,225 @@ class WidgetUtil {
   }
 
   ///确认框
-  static void showConfirmDialog(BuildContext context, Function confirmFun) {
+  static void showConfirmDialog(
+      BuildContext context, String content, Function confirmFun,
+      {Color background: SetColors.white,
+      Color contextColor: SetColors.mainColor,
+      Color btnColor: SetColors.mainColor}) {
     showDialog<Null>(
         context: context, //BuildContext对象
         barrierDismissible: false,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: Text('Are you sure want to download this wallpaper?'),
+            backgroundColor: background,
+            content: Text(
+              content,
+              style: TextStyle(color: contextColor),
+            ),
             actions: <Widget>[
               FlatButton(
-                child: Text('CANCEL'),
+                child: Text(
+                  'CANCEL',
+                  style: TextStyle(color: contextColor),
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                 },
               ),
               FlatButton(
-                child: Text('YES'),
+                child: Text(
+                  'YES',
+                  style: TextStyle(color: contextColor),
+                ),
                 onPressed: () {
                   Navigator.pop(context);
                   confirmFun();
                 },
               ),
             ],
+          );
+        });
+  }
+
+  ///确认框
+  static void showAlertDialog(
+      BuildContext context, String content, Function confirmFun,
+      {Color background: SetColors.white,
+      Color contextColor: SetColors.mainColor,
+      Color btnColor: SetColors.mainColor}) {
+    showDialog<Null>(
+        context: context, //BuildContext对象
+        //barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: background,
+            content: Text(
+              content,
+              style: TextStyle(color: contextColor),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  'YES',
+                  style: TextStyle(color: contextColor),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                  confirmFun();
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  ///关于
+  static void showAlertDialogForAbout(BuildContext context) {
+    showDialog<Null>(
+        context: context, //BuildContext对象
+        //barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: SetColors.white,
+            content: Container(
+              height: 130.0,
+              child: Column(
+                children: [
+                  Container(
+                    height: 60.0,
+                    child: Image.asset(
+                      'assets/ic_launcher.png',
+                      //color: SetColors.white,
+                      width: 60.0,
+                      height: 60.0,
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    //height: 40.0,
+                    child: Text(
+                      Config.appName,
+                      style: TextStyle(
+                          color: SetColors.mainColor,
+                          fontSize: SetConstants.lagerTextSize,
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    height: 40.0,
+                    child: Text(
+                      'Version ${Config.versionName}',
+                      style: TextStyle(
+                        color: SetColors.mainColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: <Widget>[
+              FlatButton(
+                child: Text(
+                  'OK',
+                  style: TextStyle(color: SetColors.mainColor),
+                ),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        });
+  }
+
+  ///评价
+  static void showAlertDialogForRate(BuildContext context) {
+    showDialog<Null>(
+        context: context, //BuildContext对象
+        //barrierDismissible: false,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            backgroundColor: SetColors.mainColor,
+            content: Container(
+              height: 280.0,
+              width: CommonUtil.getScreenWidth(context),
+              child: Column(
+                children: [
+                  Container(
+                    height: 80.0,
+                    child: Image.asset(
+                      'assets/ic_launcher.png',
+                      //color: SetColors.white,
+                      width: 80.0,
+                      height: 80.0,
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    height: 60.0,
+                    child: Text(
+                      'How was your experience with us?',
+                      style: TextStyle(
+                        color: SetColors.white,
+                        fontSize: SetConstants.bigTextSize,
+                      ),
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.center,
+                    height: 60.0,
+                    child: Row(
+                      children: <Widget>[
+                        Expanded(
+                          child: Container(),
+                        ),
+                        SponRatingWidget(
+                          value: 0,
+                          size: 30,
+                          padding: 5,
+                          nomalImage: 'assets/star.png',
+                          selectImage: 'assets/star.png',
+                          selectAble: true,
+                          onRatingUpdate: (value) {
+                            print('星级：' + value.toString());
+                            Navigator.pop(context);
+                            showDialog<Null>(
+                                context: context, //BuildContext对象
+                                barrierDismissible: false,
+                                builder: (BuildContext context) {
+                                  return FeedbackWidget(rate: value);
+                                });
+                          },
+                          maxRating: 5,
+                          count: 5,
+                        ),
+                        Expanded(
+                          child: Container(),
+                        )
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      color: SetColors.transparent,
+                      alignment: Alignment.center,
+                      height: 60.0,
+                      width: 200.0,
+                      child: Text(
+                        'Maybe later',
+                        style: TextStyle(
+                          color: SetColors.white,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         });
   }
@@ -317,9 +530,24 @@ class WidgetUtil {
     );
   }
 
-  static void goDetailPage(BuildContext context, String id, String operType,
-      {String cat, String keyword}) async {
-    showLoadingDialog(context, StringZh.loading);
+  static void goDetailPage(BuildContext context, String operType,
+      {PicInfo picInfo,
+      String cat,
+      String keyword,
+      String id,
+      String fileName}) async {
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return PicPreviewPage(
+        cat: cat,
+        keyword: keyword,
+        operType: operType,
+        picInfo: picInfo,
+        id: id,
+        fileName: fileName,
+      );
+    }));
+
+    /*showLoadingDialog(context, text: StringZh.loading);
     ApiUtil.getDetailInfo(context, {
       'id': id,
     }, (res) async {
@@ -362,123 +590,21 @@ class WidgetUtil {
       }
     }, (err) {
       Navigator.pop(context);
-    });
+    });*/
   }
 
   static String getPicUrl(PicInfo picInfo) {
     return Config.downloadUrl + picInfo.fileName + '_thumbnail.' + picInfo.type;
   }
 
-  /// 按指定位置弹出菜单
-  ///dx,dy:手势位置
-  ///items菜单选项，keey为显示内容，value为返回值
-  ///如果不传items参数可以自定义菜单样式，需要传size和menu
-  static Future showRightMenu(BuildContext context, dx, dy,
-      {List<MapEntry<String, dynamic>> items, Size size, Widget menu}) async {
-    double sw = MediaQuery.of(context).size.width; //屏幕宽度
-    double sh = MediaQuery.of(context).size.height; //屏幕高度
-    Border border = dy < sh / 2
-        ? //
-        Border(top: BorderSide(color: Colors.green[200], width: 2))
-        : Border(bottom: BorderSide(color: Colors.green[200], width: 2));
-
-    ///如果传了items参数则根据items生成菜单
-    if (items != null && items.length > 0) {
-      double itemWidth = 100.0;
-      double itemHeight = 50.0;
-      double menuHeight = itemHeight * items.length + 2;
-
-      size = Size(itemWidth, menuHeight);
-
-      menu = Container(
-        decoration: BoxDecoration(color: Colors.white, border: border),
-        child: Column(
-          children: items
-              .map<Widget>((e) => InkWell(
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      width: itemWidth,
-                      height: itemHeight,
-                      child: Text(
-                        e.key,
-                        style: TextStyle(fontSize: 16),
-                      ),
-                    ),
-                    onTap: () {
-                      Navigator.pop(context, e.value);
-                    },
-                  ))
-              .toList(),
-        ),
-      );
-    }
-    Size sSize = MediaQuery.of(context).size;
-
-// PopupMenuItem
-
-    double menuW = size.width; //菜单宽度
-    double menuH = size.height; //菜单高度
-    //判断手势位置在屏幕的那个区域以判断最好的弹出方向
-    double endL = dx < sw / 2 ? dx : dx - menuW;
-    double endT = dy < sh / 2 ? dy : dy - menuH;
-    double endR = dx < sw / 2 ? dx + menuW : dx;
-    double endB = dy < sh / 2 ? dy + menuH : dy;
-
-    return await showGeneralDialog(
-        context: context,
-        pageBuilder: (context, anim1, anim2) {
-          //由于用了组件放大的动画效果，所以用了SingleChildScrollView包裹
-          //否则在组件小的时候会出现菜单超出编辑的错误
-          return SingleChildScrollView(child: menu);
-        },
-        barrierColor: Colors.grey.withOpacity(0),
-        //弹窗后的背景遮罩色，调来调去还是透明的顺眼
-        barrierDismissible: true,
-        barrierLabel: "",
-        transitionDuration: Duration(milliseconds: 200),
-        //动画时间
-
-        transitionBuilder: (context, anim1, anim2, child) {
-          return Stack(
-            children: [
-              // 有好多种Transition来实现不同的动画效果，可以参考官方API
-              PositionedTransition(
-                  rect: RelativeRectTween(
-                    begin: RelativeRect.fromSize(
-                        //动画起始位置与元素大小
-                        Rect.fromLTWH(dx, dy, 1, 1),
-                        sSize),
-                    end: RelativeRect.fromSize(
-                        //动画结束位置与元素大小
-                        Rect.fromLTRB(endL, endT, endR, endB),
-                        sSize),
-                  ).animate(CurvedAnimation(parent: anim1, curve: Curves.ease)),
-                  child: child)
-            ],
-          );
-        });
-  }
-
-  /// 设置沉浸式导航栏文字颜色
-  ///
-  /// [light] 状态栏文字是否为白色
-  static SystemUiOverlayStyle setNavigationBarTextColor(bool light) {
-    return SystemUiOverlayStyle(
-      systemNavigationBarColor: Colors.white,
-      systemNavigationBarDividerColor: null,
-      statusBarColor: null,
-      systemNavigationBarIconBrightness: Brightness.dark,
-      statusBarIconBrightness: light ? Brightness.light : Brightness.dark,
-      statusBarBrightness: light ? Brightness.dark : Brightness.light,
-    );
-  }
-
-  static Widget getListWidget(Function onRefresh,
+  static Widget getListWidget(
+      Function onRefresh,
       bool loading,
       ScrollController scrollController,
       List<PicInfo> imgList,
       String operType,
-      int load){
+      int load,
+      {bool isFeatured: false}) {
     return Column(
       children: <Widget>[
         Expanded(
@@ -487,75 +613,151 @@ class WidgetUtil {
             child: loading
                 ? WidgetUtil.getEmptyLoadingWidget()
                 : StaggeredGridView.countBuilder(
-              //shrinkWrap: true,
-              controller: scrollController,
-              padding: EdgeInsets.all(2),
-              crossAxisCount: 3,
-              itemCount: imgList.length,
-              itemBuilder: (context, i) {
-                String imgPath = WidgetUtil.getPicUrl(imgList[i]);
-                return GestureDetector(
-                  onTap: () {
-                    //AdMobService.showInterstitialAd();
-                    WidgetUtil.goDetailPage(
-                        context, imgList[i].id, operType);
+                    //shrinkWrap: true,
+                    controller: scrollController,
+                    padding: EdgeInsets.all(2),
+                    crossAxisCount: 3,
+                    itemCount: imgList.length,
+                    itemBuilder: (context, i) {
+                      ///广告
+                      if (imgList[i].id == '-1') {
+                        return Container(
+                          //height: 60,
+                          //width: CommonUtil.getScreenWidth(context),
+                          //padding: EdgeInsets.all(10),
+                          //margin: EdgeInsets.only(bottom: 20.0),
+                          alignment: Alignment.center,
+                          child: NativeAdmob(
+                            loading: Center(
+                              child: CircularProgressIndicator(
+                                color: SetColors.white,
+                              ),
+                            ),
+                            adUnitID: AdMobService.nativeAdGeneralUnitId,
+                            numberAds: 5,
+                            //controller: _nativeAdController,
+                            type: NativeAdmobType.full,
+                            options: NativeAdmobOptions(
+                              headlineTextStyle: NativeTextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
 
-                    //AdMobService.showInterstitialAd();
+                      String imgPath = WidgetUtil.getPicUrl(imgList[i]);
+                      return GestureDetector(
+                        onTap: () {
+                          //AdMobService.showInterstitialAd();
+                          WidgetUtil.goDetailPage(context, operType,
+                              picInfo: imgList[i]);
 
-                    //AdMobService.showRewardedAd(context,(){});
-                  },
-                  child: new Material(
-                    //elevation: 8.0,
-                    //borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                    child: new CachedNetworkImage(
-                      imageUrl: imgPath,
-                      imageBuilder: (context, imageProvider) => Container(
-                        margin: EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: SetColors.darkGrey,
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(8.0)),
-                          image: DecorationImage(
-                            image: imageProvider,
-                            fit: BoxFit.fill,
+                          //AdMobService.showInterstitialAd();
+
+                          //AdMobService.showRewardedAd(context,(){});
+                        },
+                        child: CachedNetworkImage(
+                          imageUrl: imgPath,
+                          imageBuilder: (context, imageProvider) {
+                            return Stack(
+                              children: [
+                                Container(
+                                  margin: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: SetColors.black,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(8.0)),
+                                    image: DecorationImage(
+                                      image: imageProvider,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                ),
+                                isFeatured
+                                    ? Positioned(
+                                        top: 5.0,
+                                        right: 5.0,
+                                        child: Container(
+                                          color: Colors.transparent,
+                                          child: Icon(
+                                            Icons.remove_red_eye_outlined,
+                                            color: SetColors.white,
+                                            size: 20.0,
+                                          ),
+                                        ),
+                                      )
+                                    : Container(),
+                              ],
+                            );
+                          },
+                          placeholder: (context, url) => Container(
+                            margin: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: SetColors.mainColor,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8.0)),
+                            ),
+                            child: Container(
+                              color: SetColors.mainColor,
+                              width: 40.0,
+                              height: 40.0,
+
+                              ///限制大小无效是设置此属性
+                              alignment: Alignment.center,
+                              child: CircularProgressIndicator(
+                                color: SetColors.white,
+                              ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            margin: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: SetColors.mainColor,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(8.0)),
+                            ),
+
+                            ///限制大小无效是设置此属性
+                            alignment: Alignment.center,
+                            child: SvgPicture.asset('assets/pic_error.svg',
+                                width: 40.0,
+                                height: 40.0,
+                                color: SetColors.white),
                           ),
                         ),
-                      ),
-                      placeholder: (context, url) => Container(
-                        margin: EdgeInsets.all(2),
-                        decoration: BoxDecoration(
-                          color: SetColors.darkGrey,
-                          borderRadius:
-                          BorderRadius.all(Radius.circular(8.0)),
-                        ),
-                        child: CupertinoActivityIndicator(),
-                      ),
-                      errorWidget: (context, url, error) =>
-                          Icon(Icons.error),
-                    ),
+                      );
+                    },
+                    staggeredTileBuilder: (int index) {
+                      if (((index + 1) % (Config.loadAdCount + 1) == 0)) {
+                        return StaggeredTile.count(3, 2);
+                      } else {
+                        return StaggeredTile.count(1, 1.5);
+                      }
+                      //横轴和纵轴的数量,控制瀑布流效果
+                      //return StaggeredTile.Count(2,index==0?2.5:3)
+
+                      //return StaggeredTile.fit(1);
+                    },
+                    //crossAxisCount: 4,
+                    //crossAxisSpacing: 4,
+                    //mainAxisSpacing: 10,
                   ),
-                );
-              },
-              staggeredTileBuilder: (int index) {
-                return StaggeredTile.count(1, 2); //横轴和纵轴的数量,控制瀑布流效果
-              },
-              //crossAxisCount: 4,
-              //crossAxisSpacing: 4,
-              //mainAxisSpacing: 10,
-            ),
           ),
         ),
         WidgetUtil.getListLoadMoreOffstage(load),
       ],
     );
   }
-  static Widget getListLoadMoreOffstage(int load){
+
+  static Widget getListLoadMoreOffstage(int load) {
     return Offstage(
       offstage: load != 2,
       child: Center(
         child: SizedBox(
           child: CircularProgressIndicator(
-            strokeWidth:2.0,
+            strokeWidth: 2.0,
             backgroundColor: SetColors.gray,
             color: SetColors.gray,
           ),

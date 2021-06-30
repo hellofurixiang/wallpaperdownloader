@@ -1,14 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
-import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
-import 'package:wallpaperdownloader/page/PicDetailPage.dart';
-import 'package:wallpaperdownloader/page/PicEditPage.dart';
 
 ///受欢迎的，下载量倒序
 class PopularPage extends StatefulWidget {
@@ -47,6 +42,7 @@ class PopularPageState extends State<PopularPage> {
   ///当整个页面dispose时，记得把控制器也dispose掉，释放内存
   @override
   void dispose() {
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -80,7 +76,7 @@ class PopularPageState extends State<PopularPage> {
     page++;
     initData(page);
   }
-
+  int nativeAdCount = 0;
   ///成功方法处理
   void successCallBack(res) {
     if (res['code'] == '1') {
@@ -91,6 +87,14 @@ class PopularPageState extends State<PopularPage> {
         loading = false;
         for (int i = 0; i < res['resBody']['records'].length; i++) {
           imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+          if (imgList.length == Config.loadAdCount) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          } else if (imgList.length > Config.loadAdCount &&
+              (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          }
         }
       });
 

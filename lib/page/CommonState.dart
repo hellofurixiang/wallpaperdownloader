@@ -26,21 +26,27 @@ abstract class CommonState<T extends StatefulWidget> extends State<T>
         break;
       case AppLifecycleState.resumed: // 应用程序可见，前台
         if (showBannerAdState == 0) {
-          GlobalInfo.instance.setShowBannerAdState(2);
-          showDialog<Null>(
-              context: context, //BuildContext对象
-              barrierDismissible: false,
-              builder: (BuildContext context) {
-                return BannerAdWidget();
-              });
+          //if (re == null) {
+         /* Future<Null> ree = GlobalInfo.instance.getBannerAd();
+          if (ree == null) {
+            GlobalInfo.instance.setShowBannerAdState(2);
+            Future<Null> re = showDialog<Null>(
+                context: context, //BuildContext对象
+                barrierDismissible: false,
+                builder: (BuildContext context) {
+                  return BannerAdWidget();
+                });
+            GlobalInfo.instance.setBannerAd(re);
+          }*/
+          //}
         } else if (showBannerAdState == 2) {
           GlobalInfo.instance.setShowBannerAdState(0);
         }
         break;
       case AppLifecycleState.paused: // 应用程序不可见，后台
-        /*if (showBannerAdState == 2) {
+        if (showBannerAdState == 2) {
           GlobalInfo.instance.setShowBannerAdState(0);
-        }*/
+        }
         break;
       /*case AppLifecycleState.suspending: // 申请将暂时暂停
         break;*/

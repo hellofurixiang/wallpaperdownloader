@@ -33,6 +33,8 @@ class PicInfo {
   String resolution;
 
   PicInfo.empty();
+  PicInfo.nativeAd(this.id);
+  PicInfo.newInfo(this.id,this.fileName,this.type);
 
   PicInfo(
     this.id,

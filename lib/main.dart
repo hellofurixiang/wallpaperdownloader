@@ -1,14 +1,11 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:provider/provider.dart';
-import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
-import 'package:wallpaperdownloader/common/utils/LogUtils.dart';
-import 'package:wallpaperdownloader/page/AdMobService.dart';
-import 'package:wallpaperdownloader/page/AdState.dart';
+import 'package:get_it/get_it.dart';
+import 'package:wallpaperdownloader/common/style/Styles.dart';
+import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
+import 'package:wallpaperdownloader/common/utils/TelAndSmsService.dart';
 import 'package:wallpaperdownloader/page/MainPage.dart';
 import 'package:wallpaperdownloader/page/PicEditPage.dart';
 import 'package:wallpaperdownloader/page/SplashScreen.dart';
@@ -17,14 +14,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   AdMobService.initialize();
 
+  GetIt.instance.registerSingleton(TelAndSmsService());
+
   runApp(MyApp());
-
-  /* WidgetsFlutterBinding.ensureInitialized();
-  AdMobService.initialize();
-
-  runApp(
-    MyApp()
-  );*/
 
 
   if (Platform.isAndroid) {
@@ -60,10 +52,10 @@ class MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false, // 设置这一属性即可去掉右上角debug
       home: SplashScreen(),
       routes: routes,
-      /*theme: ThemeData(
-        brightness: Brightness.light, //指定亮度主题，有白色/黑色两种可选。
-        primaryColor: Colors.white,
-      ), *///这里我们选蓝色为基准色值。
+      theme: ThemeData(
+        brightness: Brightness.dark, //指定亮度主题，有白色/黑色两种可选。
+        primaryColor: SetColors.black,
+      ), //这里我们选蓝色为基准色值。
     );
   }
 
@@ -71,20 +63,4 @@ class MyAppState extends State<MyApp> {
   void didChangeDependencies() {
     super.didChangeDependencies();
   }
-
-/*@override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      debugShowCheckedModeBanner: false, // 设置这一属性即可去掉右上角debug
-      home: Scaffold(
-        body: banner == null
-            ? Center(child: Text('dddd'))
-            : Container(
-                alignment: Alignment.center,
-                child: AdWidget(
-                    ad: banner..load()),
-              ),
-      ),
-    );
-  }*/
 }

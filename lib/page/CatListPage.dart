@@ -1,10 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_native_admob/flutter_native_admob.dart';
+import 'package:flutter_native_admob/native_admob_options.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
 import 'package:wallpaperdownloader/common/modal/CatInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
+import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
+import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
 import 'package:wallpaperdownloader/page/CatPicListPage.dart';
 
@@ -44,6 +49,7 @@ class CatListPageState extends State<CatListPage> {
   ///当整个页面dispose时，记得把控制器也dispose掉，释放内存
   @override
   void dispose() {
+    scrollController.dispose();
     super.dispose();
   }
 
@@ -85,6 +91,9 @@ class CatListPageState extends State<CatListPage> {
         loading = false;
         for (int i = 0; i < res['resBody'].length; i++) {
           imgList.add(CatInfo.fromJson(res['resBody'][i]));
+          if ((i >= 4) && (i % 4 == 0)) {
+            imgList.add(CatInfo.nativeAd('-1'));
+          }
         }
       });
 
@@ -117,6 +126,34 @@ class CatListPageState extends State<CatListPage> {
                 : ListView.builder(
                     controller: scrollController,
                     itemBuilder: (context, i) {
+
+                      if (imgList[i].topId == '-1') {
+                        return Container(
+                          height: MediaQuery.of(context).size.height / 3,
+                          width: MediaQuery.of(context).size.width,
+                          //padding: EdgeInsets.all(10),
+                          //margin: EdgeInsets.only(bottom: 20.0),
+                          alignment: Alignment.center,
+                          child: NativeAdmob(
+                            loading: Center(
+                              child: CircularProgressIndicator(
+                                color: SetColors.white,
+                              ),
+                            ),
+                            adUnitID: AdMobService.nativeAdGeneralUnitId,
+                            numberAds: 5,
+                            //controller: _nativeAdController,
+                            type: NativeAdmobType.full,
+                            options: NativeAdmobOptions(
+                              headlineTextStyle: NativeTextStyle(
+                                fontSize: 16,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+
                       String imgPath = Config.downloadUrl +
                           imgList[i].fileName +
                           '_thumbnail.' +
@@ -141,25 +178,46 @@ class CatListPageState extends State<CatListPage> {
                                     Container(
                                   decoration: BoxDecoration(
                                     //borderRadius: BorderRadius.all(Radius.circular(8.0)),
+                                    color: SetColors.black,
                                     image: DecorationImage(
                                       image: imageProvider,
-                                      fit: BoxFit.fill,
+                                      fit: BoxFit.cover,
                                     ),
                                   ),
                                 ),
                                 placeholder: (context, url) => Container(
                                   margin: EdgeInsets.all(2),
                                   decoration: BoxDecoration(
-                                    color: SetColors.darkGrey,
+                                    color: SetColors.black,
                                     borderRadius:
                                         BorderRadius.all(Radius.circular(8.0)),
                                   ),
-                                  child: CupertinoActivityIndicator(),
+                                  child: Container(
+                                    color: SetColors.mainColor,
+                                    width: 40.0,
+                                    height: 40.0,
+
+                                    ///限制大小无效是设置此属性
+                                    alignment: Alignment.center,
+                                    child: CircularProgressIndicator(
+                                      color: SetColors.white,
+                                    ),
+                                  ),
                                 ),
-                                errorWidget: (context, url, error) => Icon(
-                                  Icons.error,
-                                  color: SetColors.darkDarkGrey,
-                                  size: 40.0,
+                                errorWidget: (context, url, error) => Container(
+                                  margin: EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: SetColors.mainColor,
+                                    borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                                  ),
+
+                                  ///限制大小无效是设置此属性
+                                  alignment: Alignment.center,
+                                  child: SvgPicture.asset('assets/pic_error.svg',
+                                      width: 40.0,
+                                      height: 40.0,
+                                      color: SetColors.white),
                                 ),
                               ),
                             ),

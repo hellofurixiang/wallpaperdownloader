@@ -30,7 +30,8 @@ class AdMobService {
   ///插页式激励广告	ca-app-pub-3940256099942544/5354046379
   ///原生高级广告	ca-app-pub-3940256099942544/2247696110
   ///原生高级视频广告	ca-app-pub-3940256099942544/1044960115
-
+  static String nativeAdGeneralUnitId='ca-app-pub-3940256099942544/2247696110';
+  static String nativeAdUnitId='ca-app-pub-3940256099942544/1044960115';
   ///ios
   ///广告格式	演示广告单元 ID
   ///开屏广告	ca-app-pub-3940256099942544/5662855259
@@ -49,18 +50,22 @@ class AdMobService {
   }
 
   ///横幅广告
-  static BannerAd createBannerAd({AdSize adSize: AdSize.banner}) {
+  static BannerAd createBannerAd(Function onAdLoaded,
+      {AdSize adSize: AdSize.banner}) {
     BannerAd bannerAd = new BannerAd(
         size: adSize,
         adUnitId: BannerAd.testAdUnitId,
         listener: AdListener(
-            onAdLoaded: (Ad ad) => LogUtils.i(logTag, 'Ad loaded'),
+            onAdLoaded: (Ad ad) {
+              onAdLoaded();
+              LogUtils.i(logTag, 'Ad loaded');
+            },
             onAdFailedToLoad: (Ad ad, LoadAdError err) {
               ad.dispose();
             },
-            onAdOpened: (Ad ad) => LogUtils.i(logTag,'Ad opened'),
+            onAdOpened: (Ad ad) => LogUtils.i(logTag, 'Ad opened'),
             onAdClosed: (Ad ad) {
-              LogUtils.i(logTag,'Ad closed');
+              LogUtils.i(logTag, 'Ad closed');
               ad.dispose();
             },
             onApplicationExit: (Ad ad) {
@@ -73,20 +78,27 @@ class AdMobService {
   static InterstitialAd interstitialAd;
 
   ///插页式广告
-  static InterstitialAd createInterstitialAd() {
+  static InterstitialAd createInterstitialAd(
+      {Function onAdLoaded, Function onAdClosed}) {
     return InterstitialAd(
         adUnitId: InterstitialAd.testAdUnitId,
         listener: AdListener(
             onAdLoaded: (Ad ad) {
-              LogUtils.i(logTag,'InterstitialAd loaded');
+              LogUtils.i(logTag, 'InterstitialAd loaded');
+              if (onAdLoaded != null) {
+                onAdLoaded();
+              }
               interstitialAd.show();
             },
             onAdFailedToLoad: (Ad ad, LoadAdError err) {
               interstitialAd.dispose();
             },
-            onAdOpened: (Ad ad) => LogUtils.i(logTag,'InterstitialAd opened'),
+            onAdOpened: (Ad ad) => LogUtils.i(logTag, 'InterstitialAd opened'),
             onAdClosed: (Ad ad) {
-              LogUtils.i(logTag,'InterstitialAd closed');
+              LogUtils.i(logTag, 'InterstitialAd closed');
+              if (onAdClosed != null) {
+                onAdClosed();
+              }
               interstitialAd.dispose();
             },
             onApplicationExit: (Ad ad) {
@@ -95,9 +107,10 @@ class AdMobService {
         request: AdRequest());
   }
 
-  static void showInterstitialAd() {
+  static void showInterstitialAd({Function onAdLoaded, Function onAdClosed}) {
     interstitialAd?.dispose();
-    interstitialAd = createInterstitialAd();
+    interstitialAd =
+        createInterstitialAd(onAdLoaded: onAdLoaded, onAdClosed: onAdClosed);
     interstitialAd.load();
   }
 
@@ -105,39 +118,44 @@ class AdMobService {
 
   ///激励广告、视频广告
   static RewardedAd createRewardedAd(
-      BuildContext context, Function onAdClosed) {
+      BuildContext context, {Function onAdLoad,Function onAdClosed}) {
     return RewardedAd(
       adUnitId: RewardedAd.testAdUnitId,
       request: AdRequest(),
       listener: AdListener(
         onRewardedAdUserEarnedReward: (RewardedAd ad, RewardItem reward) {
-          LogUtils.i(logTag,reward.type);
-          LogUtils.i(logTag,reward.amount.toString());
+          LogUtils.i(logTag, reward.type);
+          LogUtils.i(logTag, reward.amount.toString());
         },
         // Called when an ad is successfully received.
         onAdLoaded: (Ad ad) {
-          LogUtils.i(logTag,'Ad loaded.');
+          LogUtils.i(logTag, 'Ad loaded.');
           Navigator.pop(context);
           rewardedAd.show();
+          if(onAdLoad!=null){
+            onAdLoad();
+          }
         },
         // Called when an ad request failed.
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
-          LogUtils.i(logTag,'Ad failed to load: $error');
+          LogUtils.i(logTag, 'Ad failed to load: $error');
           Navigator.pop(context);
           rewardedAd.dispose();
         },
         // Called when an ad opens an overlay that covers the screen.
-        onAdOpened: (Ad ad) => LogUtils.i(logTag,'Ad opened.'),
+        onAdOpened: (Ad ad) => LogUtils.i(logTag, 'Ad opened.'),
         // Called when an ad removes an overlay that covers the screen.
         onAdClosed: (Ad ad) {
           //ad.
-          LogUtils.i(logTag,'Ad closed.');
+          LogUtils.i(logTag, 'Ad closed.');
           rewardedAd.dispose();
-          onAdClosed();
+          if(onAdClosed!=null){
+            onAdClosed();
+          }
         },
         // Called when an ad is in the process of leaving the application.
         onApplicationExit: (Ad ad) {
-          LogUtils.i(logTag,'Left application.');
+          LogUtils.i(logTag, 'Left application.');
           Navigator.pop(context);
           rewardedAd.dispose();
         },
@@ -146,9 +164,57 @@ class AdMobService {
     );
   }
 
-  static void showRewardedAd(BuildContext context, Function onAdClosed) {
+  static void showRewardedAd(BuildContext context, {Function onAdLoad,Function onAdClosed}) {
     rewardedAd?.dispose();
-    rewardedAd = createRewardedAd(context, onAdClosed);
+    rewardedAd = createRewardedAd(context, onAdLoad:onAdLoad,onAdClosed:onAdClosed);
     rewardedAd.load();
+  }
+
+  ///原生横幅广告
+  static NativeAd createBottomNativeAd(Function onAdLoaded) {
+    NativeAd nativeAd = new NativeAd(
+        factoryId: 'bottomNativeAd',
+        adUnitId: NativeAd.testAdUnitId,
+        listener: AdListener(
+            onAdLoaded: (Ad ad) {
+              onAdLoaded();
+            },
+            onAdFailedToLoad: (Ad ad, LoadAdError err) {
+              ad.dispose();
+            },
+            onAdOpened: (Ad ad) {},
+            onAdClosed: (Ad ad) {
+              // LogUtils.i(logTag,'Ad closed');
+              ad.dispose();
+            },
+            onApplicationExit: (Ad ad) {
+              ad.dispose();
+            }),
+        request: AdRequest());
+    return nativeAd;
+  }
+
+  ///原生横幅广告
+  static NativeAd createLagerNativeAd(Function onAdLoaded) {
+    NativeAd nativeAd = new NativeAd(
+        factoryId: 'lagerNativeAd',
+        adUnitId: NativeAd.testAdUnitId,
+        listener: AdListener(
+            onAdLoaded: (Ad ad) {
+              onAdLoaded();
+            },
+            onAdFailedToLoad: (Ad ad, LoadAdError err) {
+              ad.dispose();
+            },
+            onAdOpened: (Ad ad) {},
+            onAdClosed: (Ad ad) {
+              // LogUtils.i(logTag,'Ad closed');
+              ad.dispose();
+            },
+            onApplicationExit: (Ad ad) {
+              ad.dispose();
+            }),
+        request: AdRequest());
+    return nativeAd;
   }
 }

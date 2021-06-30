@@ -1,13 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
-import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
-import 'package:wallpaperdownloader/page/PicDetailPage.dart';
 
 ///广告
 class AdvertisingPage extends StatefulWidget {
@@ -79,7 +75,7 @@ class AdvertisingPageState extends State<AdvertisingPage> {
     page++;
     initData(page);
   }
-
+  int nativeAdCount = 0;
   ///成功方法处理
   void successCallBack(res) {
     if (res['code'] == '1') {
@@ -90,6 +86,14 @@ class AdvertisingPageState extends State<AdvertisingPage> {
         loading = false;
         for (int i = 0; i < res['resBody']['records'].length; i++) {
           imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+          if (imgList.length == Config.loadAdCount) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          } else if (imgList.length > Config.loadAdCount &&
+              (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+            imgList.add(PicInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          }
         }
       });
 
@@ -113,88 +117,7 @@ class AdvertisingPageState extends State<AdvertisingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: <Widget>[
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: onRefresh,
-            child: loading
-                ? WidgetUtil.getEmptyLoadingWidget()
-                : StaggeredGridView.countBuilder(
-                    controller: scrollController,
-                    padding: EdgeInsets.all(2),
-                    crossAxisCount: 3,
-                    itemCount: imgList.length,
-                    itemBuilder: (context, i) {
-                      String imgPath = WidgetUtil.getPicUrl(imgList[i]);
-                      return GestureDetector(
-                        onTap: () {
-                          //AdMobService.showInterstitialAd();
-                          WidgetUtil.goDetailPage(
-                              context, imgList[i].id, operType);
-                        },
-                        child: new Material(
-                          //elevation: 8.0,
-                          //borderRadius: BorderRadius.all(Radius.circular(8.0)),
-                          child: Stack(
-                            children: [
-                              CachedNetworkImage(
-                                imageUrl: imgPath,
-                                imageBuilder: (context, imageProvider) =>
-                                    Container(
-                                  margin: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(8.0)),
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.fill,
-                                    ),
-                                  ),
-                                ),
-                                placeholder: (context, url) => Container(
-                                  alignment:Alignment.center,
-                                  margin: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: SetColors.darkGrey,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(8.0)),
-                                  ),
-                                  child: CupertinoActivityIndicator(),
-                                ),
-                                errorWidget: (context, url, error) =>
-                                    Image.asset(
-                                  "assets/failed.jpg",
-                                  fit: BoxFit.fill,
-                                ),
-                              ),
-                              Positioned(
-                                top: 5.0,
-                                right: 5.0,
-                                child: Container(
-                                  color: Colors.transparent,
-                                  child: Icon(
-                                    Icons.remove_red_eye_outlined,
-                                    color: SetColors.white,
-                                    size: 20.0,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-              staggeredTileBuilder: (int index) {
-                return StaggeredTile.count(1, 2); //横轴和纵轴的数量,控制瀑布流效果
-              },
-                    //mainAxisSpacing: 8.0,
-                    //crossAxisSpacing: 8.0,
-                  ),
-          ),
-        ),
-        WidgetUtil.getListLoadMoreOffstage(load),
-      ],
-    );
+    return WidgetUtil.getListWidget(
+        onRefresh, loading, scrollController, imgList, operType, load);
   }
 }

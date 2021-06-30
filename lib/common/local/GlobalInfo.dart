@@ -48,4 +48,14 @@ class GlobalInfo {
   setShowBannerAdState(int showBannerAdState) {
     this.showBannerAdState = showBannerAdState;
   }
+
+  Future<Null> bannerAd;
+
+  Future<Null> getBannerAd() {
+    return bannerAd;
+  }
+
+  setBannerAd(Future<Null> banner) {
+    this.bannerAd = banner;
+  }
 }

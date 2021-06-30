@@ -45,6 +45,9 @@ class InputWidget extends StatefulWidget {
   ///文本框填充颜色
   final Color textFillColor;
 
+  ///清除图标颜色
+  final Color clearColor;
+
   ///文本框父控件填充颜色
   final Color containerFillColor;
 
@@ -60,6 +63,9 @@ class InputWidget extends StatefulWidget {
 
   ///是否可编辑
   final bool enabled;
+
+  ///是否显示清除图标
+  final bool showClear;
 
   ///数字类型
   final bool isNumber;
@@ -92,7 +98,7 @@ class InputWidget extends StatefulWidget {
       this.controller,
       this.keyboardType,
       this.textFillColor: Colors.white,
-      this.containerFillColor: Colors.white,
+      this.containerFillColor: Colors.transparent,
       this.isShowPrompt: false,
       this.promptText,
       this.textColor: Colors.black,
@@ -104,7 +110,9 @@ class InputWidget extends StatefulWidget {
       this.focusNode,
       this.isSimple: false,
       this.isNullReturn: true,
-      this.showScanIcon: true});
+      this.showScanIcon: true,
+      this.clearColor: Colors.white,
+      this.showClear:true});
 
   @override
   InputWidgetState createState() => new InputWidgetState();
@@ -199,26 +207,25 @@ class InputWidgetState extends State<InputWidget> {
     }
 
     Widget clearWidget;
-    if (widget.enabled) {
-      clearWidget = new GestureDetector(
+    if (widget.enabled && widget.showClear) {
+      clearWidget = GestureDetector(
         onTap: () {
           ///解决报错：invalid text selection: TextSelection(baseOffset: 7, extentOffset: 7
           ///保证在组件build的第一帧时才去触发取消清空内容
           WidgetsBinding.instance
               .addPostFrameCallback((_) => controller.clear());
 
-          controller =
-              TextEditingController.fromValue(TextEditingValue(
-                ///设置内容
-                text: controller.text,
+          controller = TextEditingController.fromValue(TextEditingValue(
+            ///设置内容
+            text: controller.text,
 
-                ///保持光标在最后
-                selection: TextSelection.fromPosition(
-                  TextPosition(
-                      affinity: TextAffinity.downstream,
-                      offset: controller.text.length),
-                ),
-              ));
+            ///保持光标在最后
+            selection: TextSelection.fromPosition(
+              TextPosition(
+                  affinity: TextAffinity.downstream,
+                  offset: controller.text.length),
+            ),
+          ));
           if (showClear) {
             if (null != widget.clearCallBack) widget.clearCallBack();
             if (null != widget.onChanged) widget.onChanged('');
@@ -227,17 +234,19 @@ class InputWidgetState extends State<InputWidget> {
             showClear = false;
           });
         },
-        child: showClear?new Icon(
-           Icons.clear,
-          //SetIcons.barcode_input,
-          size: 25.0,
-          color: SetColors.black,
-        ):Container(),
+        child: showClear
+            ? Icon(
+                Icons.clear,
+                //SetIcons.barcode_input,
+                size: 25.0,
+                color: widget.clearColor,
+              )
+            : Container(),
       );
     }
     InputDecoration inputDecoration;
     if (widget.isSimple) {
-      inputDecoration = new InputDecoration(
+      inputDecoration = InputDecoration(
         suffixIcon: clearWidget,
 
         ///输入内容距离上下左右的距离 ，可通过这个属性来控制 TextField的高度
@@ -247,7 +256,7 @@ class InputWidgetState extends State<InputWidget> {
         filled: true,
       );
     } else {
-      inputDecoration = new InputDecoration(
+      inputDecoration = InputDecoration(
         suffixIcon: clearWidget,
 
         ///输入内容距离上下左右的距离 ，可通过这个属性来控制 TextField的高度
@@ -260,26 +269,26 @@ class InputWidgetState extends State<InputWidget> {
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
           borderSide:
-              new BorderSide(color: SetColors.lightLightGrey, width: 1.0),
+              BorderSide(color: SetColors.lightLightGrey, width: 1.0),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: new BorderSide(color: SetColors.transparent, width: 1.0),
+          borderSide: BorderSide(color: SetColors.transparent, width: 1.0),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(4),
-          borderSide: new BorderSide(color: SetColors.transparent, width: 1.0),
+          borderSide: BorderSide(color: SetColors.transparent, width: 1.0),
         ),
       );
     }
 
-    Widget textFieldWidget = new TextField(
+    Widget textFieldWidget = TextField(
         focusNode: focusNode,
         maxLines: widget.maxLines,
         inputFormatters: inputFormatters,
         enabled: widget.enabled,
         style:
-            new TextStyle(fontSize: widget.textSize, color: widget.textColor),
+            TextStyle(fontSize: widget.textSize, color: widget.textColor),
         textAlign: widget.isCenter ? TextAlign.center : TextAlign.left,
         autofocus: widget.isAutofocus,
         decoration: inputDecoration,
@@ -294,24 +303,24 @@ class InputWidgetState extends State<InputWidget> {
         keyboardType: keyboardType);
 
     if (widget.isSimple) {
-      return new Container(height: widget.height, child: textFieldWidget);
+      return Container(height: widget.height, child: textFieldWidget);
     } else {
-      return new Container(
+      return Container(
         height: widget.height,
-        padding: new EdgeInsets.all(0.5),
-        decoration: new BoxDecoration(
+        padding: EdgeInsets.all(0.5),
+        decoration: BoxDecoration(
           borderRadius: BorderRadius.all(Radius.circular(4.0)),
-          color: SetColors.transparent,
+          color: widget.containerFillColor,
         ),
-        //padding: new EdgeInsets.all(10.0),
-        child: new Container(
-          padding: new EdgeInsets.all(1.0),
+        //padding: EdgeInsets.all(10.0),
+        child: Container(
+          padding: EdgeInsets.all(1.0),
           height: widget.maxLines * 24.0,
-          decoration: new BoxDecoration(
+          decoration: BoxDecoration(
             borderRadius: BorderRadius.all(Radius.circular(4.0)),
             color: SetColors.transparent,
           ),
-          //padding: new EdgeInsets.all(10.0),
+          //padding: EdgeInsets.all(10.0),
           child: textFieldWidget,
         ),
       );

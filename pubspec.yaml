@@ -18,7 +18,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.7.0 <3.0.0"
+  sdk: ">=2.10.3 <3.0.0"
 
 dependencies:
   flutter:
@@ -56,7 +56,7 @@ dependencies:
 
   http: ^0.13.1
 
-  fast_gbk: ^0.1.2+1
+  #fast_gbk: ^0.1.2+1
 
   synchronized: ^3.0.0
 
@@ -64,7 +64,7 @@ dependencies:
   device_info: ^2.0.0
   downloads_path_provider: ^0.1.0
   permission_handler: ^6.1.1
-  package_info: ^0.4.3+4
+  package_info: ^2.0.2
   path_provider: ^2.0.1
   let_log: ^1.1.4
   file_picker: ^3.0.0
@@ -75,10 +75,13 @@ dependencies:
   flutter_staggered_grid_view: ^0.4.0
   # 网络缓存图片
   cached_network_image: ^3.0.0
+
   #导入移动广告 SDK
   google_mobile_ads: ^0.12.2
 
-  provider: ^5.0.0
+  flutter_native_admob: ^2.1.0+3
+
+  #provider: ^5.0.0
   #保存文件或图片到本地
   image_gallery_saver: ^1.6.9
   #分享
@@ -87,10 +90,20 @@ dependencies:
   wallpaper: ^0.0.8
   wallpaper_manager: ^1.0.10
 
+  url_launcher: ^6.0.6
+  get_it: ^7.1.4
+
+  in_app_review: ^2.0.2
+  #flutter_rating_bar: ^4.0.0
+  #rate_my_app: ^1.1.0+1
+  mailto: ^2.0.0
+  flutter_swiper: ^1.1.6
+  #image_picker: ^0.8.0+4
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner: ^1.8.1
+  build_runner: ^2.0.4
   json_serializable: ^4.1.0
 
 # For information on the generic Dart part of this file, see the

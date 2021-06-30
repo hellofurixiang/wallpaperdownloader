@@ -19,6 +19,8 @@ class CatInfo {
 
   CatInfo.empty();
 
+  CatInfo.nativeAd(this.topId);
+
   CatInfo(
     this.cat,
     this.count,
@@ -31,4 +33,6 @@ class CatInfo {
       _$CatInfoFromJson(srcJson);
 
   Map<String, dynamic> toJson() => _$CatInfoToJson(this);
+
+
 }

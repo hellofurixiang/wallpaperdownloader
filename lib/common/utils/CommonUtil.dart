@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:device_info/device_info.dart';
 import 'package:flutter/material.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -10,7 +11,6 @@ import 'dart:io';
 
 /// 使用 DefaultCacheManager 类（可能无法自动引入，需要手动引入）
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
-import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
 
 ///通用逻辑
@@ -52,7 +52,7 @@ class CommonUtil {
   /// 保存图片到相册
   ///
   ///下载网络图片
-  static Future<void> saveImage(BuildContext context, String imageUrl) async {
+  static Future<String> saveImage(BuildContext context, String imageUrl) async {
     try {
       /// 权限检测
       PermissionStatus storageStatus = await Permission.storage.status;
@@ -83,10 +83,40 @@ class CommonUtil {
       Navigator.pop(context);
 
       WidgetUtil.showToast(msg: 'Download successful');
+
+
+
+      return result['filePath'].toString();
+
+
     } catch (e) {
       Navigator.pop(context);
       //print(e.toString());
     }
+    return null;
+  }
+
+
+  void Devinfo() async{
+    DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+    AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
+
+
+    IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
+    print(iosDeviceInfo.identifierForVendor);
+    print(iosDeviceInfo.localizedModel);
+    print(iosDeviceInfo.model);
+    print(iosDeviceInfo.name);
+    print(iosDeviceInfo.systemVersion);
+    print(iosDeviceInfo.systemName);
+
+    // print(androidInfo.androidId);// Android硬件设备ID。
+    // print(androidInfo.manufacturer); // 产品/硬件的制造商。
+    // print(androidInfo.device); //设备名称
+    // print(androidInfo.model); //最终产品的最终用户可见名称。
+    // print(androidInfo.board);//设备基板名称
+    // print(androidInfo.bootloader); //获取设备引导程序版本号
+    // print(androidInfo.product); //整个产品的名称
   }
 
 }

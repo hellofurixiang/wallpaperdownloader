@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 29 25" id="vector">
+    <defs>
+        <clipPath id="clip_path">
+            <path d="M 0 0 L 29 0 L 29 25 L 0 25 Z" />
+        </clipPath>
+    </defs>
+    <g id="group">
+        <path id="path" clip-path="url(#clip_path)"
+            d="M 28.397 9.184 C 26.84 1.345 16.991 0.225 14.422 7.412 C 11.743 0.267 1.912 1.544 0.481 9.41 C -0.951 17.276 14.563 24.827 14.563 24.827 C 14.563 24.827 29.955 17.023 28.397 9.184 Z" />
+    </g>
+</svg>

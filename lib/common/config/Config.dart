@@ -31,11 +31,21 @@ class Config {
   ///标准屏幕宽度
   static const int screenWidth = 600;
 
-  static const String versionName = 'V1.01';
-  static const String appName = 'Wallpaper hd';
+  static const String versionName = 'V1.04';
+  static const String appName = 'Wallpaper HD';
 
   static const String mainPage = 'MainPage';
 
   ///调试状态
   static const bool isDebug = true;
+
+  static const String emailUrl='qiangzi1688@gmail.com';
+
+
+  static const String shareStr='Wallpaper HD - Unique collection of 4K and Live Wallpapers.Available on Play Store,Download Now - https://play.google.com/store/apps/details?id=com.hdwallpaper.wallpaper';
+
+
+  ///列表加载广告间隔数
+  static const int loadAdCount = 9;
+
 }
