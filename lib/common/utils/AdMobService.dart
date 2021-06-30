@@ -96,10 +96,10 @@ class AdMobService {
             onAdOpened: (Ad ad) => LogUtils.i(logTag, 'InterstitialAd opened'),
             onAdClosed: (Ad ad) {
               LogUtils.i(logTag, 'InterstitialAd closed');
+              interstitialAd.dispose();
               if (onAdClosed != null) {
                 onAdClosed();
               }
-              interstitialAd.dispose();
             },
             onApplicationExit: (Ad ad) {
               interstitialAd.dispose();

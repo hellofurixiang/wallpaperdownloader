@@ -11,12 +11,14 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
+import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
+import 'package:wallpaperdownloader/common/modal/WatchAdEntity.dart';
 import 'package:wallpaperdownloader/common/style/StringZh.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
-import 'package:wallpaperdownloader/page/PicDetailPage.dart';
 import 'package:wallpaperdownloader/page/PicPreviewPage.dart';
 import 'package:wallpaperdownloader/page/widget/FeedbackWidget.dart';
 import 'package:wallpaperdownloader/page/widget/SponRatingWidget.dart';
@@ -157,7 +159,7 @@ class WidgetUtil {
       {Color background: SetColors.white,
       Color contextColor: SetColors.mainColor,
       Color btnColor: SetColors.mainColor}) {
-    showDialog<Null>(
+    showDialog<bool>(
         context: context, //BuildContext对象
         barrierDismissible: false,
         builder: (BuildContext context) {
@@ -174,7 +176,7 @@ class WidgetUtil {
                   style: TextStyle(color: contextColor),
                 ),
                 onPressed: () {
-                  Navigator.pop(context);
+                  Navigator.pop(context, false);
                 },
               ),
               FlatButton(
@@ -183,13 +185,16 @@ class WidgetUtil {
                   style: TextStyle(color: contextColor),
                 ),
                 onPressed: () {
-                  Navigator.pop(context);
-                  confirmFun();
+                  Navigator.pop(context, true);
                 },
               ),
             ],
           );
-        });
+        }).then((value) {
+      if (value) {
+        confirmFun();
+      }
+    });
   }
 
   ///确认框
@@ -198,7 +203,7 @@ class WidgetUtil {
       {Color background: SetColors.white,
       Color contextColor: SetColors.mainColor,
       Color btnColor: SetColors.mainColor}) {
-    showDialog<Null>(
+    showDialog<bool>(
         context: context, //BuildContext对象
         //barrierDismissible: false,
         builder: (BuildContext context) {
@@ -215,13 +220,16 @@ class WidgetUtil {
                   style: TextStyle(color: contextColor),
                 ),
                 onPressed: () {
-                  Navigator.pop(context);
-                  confirmFun();
+                  Navigator.pop(context, true);
                 },
               ),
             ],
           );
-        });
+        }).then((value) {
+      if (value) {
+        confirmFun();
+      }
+    });
   }
 
   ///关于
@@ -766,5 +774,70 @@ class WidgetUtil {
         ),
       ),
     );
+  }
+
+
+
+
+  ///弹广告操作
+  static Future showAd(BuildContext context,WatchAdProvider watchAdProvider,Function operFun) async {
+    DateTime dateNow = DateTime.now();
+
+    ///两次广告之间间隔30秒以内不显示广告
+    DateTime dateTime = GlobalInfo.instance.getWatchDateTime();
+    if (dateTime != null) {
+      Duration difference = dateNow.difference(dateTime);
+      if (difference.inSeconds <= 30) {
+        operFun();
+        return;
+      }
+    }
+
+    ///当前日期
+    String watchDate =
+        "${dateNow.year.toString()}-${dateNow.month.toString().padLeft(2, '0')}-${dateNow.day.toString().padLeft(2, '0')}";
+
+    WatchAdEntity watchAdEntity = await watchAdProvider.findOne(watchDate);
+    bool showRewardedAd = false;
+    bool showInterstitialAd = false;
+
+    if (watchAdEntity != null) {
+
+      print("watchAdEntity.watchRewardedAd:"+watchAdEntity.watchRewardedAd.toString()+'----'+watchAdEntity.watchInterstitialAd.toString());
+      if (watchAdEntity.watchRewardedAd == 10 &&
+          watchAdEntity.watchInterstitialAd == 10) {
+        operFun();
+        return;
+      }
+      if (watchAdEntity.watchRewardedAd < 10) {
+        showRewardedAd = true;
+      } else {
+        if (watchAdEntity.watchInterstitialAd < 10) {
+          showInterstitialAd = true;
+        }
+      }
+    } else {
+      showRewardedAd = true;
+    }
+    WidgetUtil.showLoadingDialog(context, text: 'Loading ads...');
+
+    ///GlobalInfo.instance.setShowBannerAdState(1);
+    if (showRewardedAd) {
+      AdMobService.showRewardedAd(context, onAdLoad: () {},
+          onAdClosed: () async {
+            ///GlobalInfo.instance.setShowBannerAdState(2);
+            ///changeAdvertising();
+            GlobalInfo.instance.setWatchDateTime(DateTime.now());
+            await watchAdProvider.updateWatchRewardedAd(watchDate);
+            operFun();
+          });
+    } else {
+      AdMobService.showInterstitialAd(onAdLoaded: () {
+        Navigator.pop(context);
+      }, onAdClosed: () async {
+        await watchAdProvider.updateWatchInterstitialAd(watchDate);
+        operFun();
+      });
+    }
   }
 }

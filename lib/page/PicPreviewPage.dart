@@ -224,19 +224,6 @@ class PicPreviewPageState extends State<PicPreviewPage>
                               initData();
                             }
                           },
-                          onTap: (index) {
-                            if (picInfos[index].id != '-1') {
-                              Navigator.push(context,
-                                  MaterialPageRoute(builder: (context) {
-                                return PicDetailPage(
-                                  cat: widget.cat,
-                                  keyword: widget.keyword,
-                                  operType: widget.operType,
-                                  id: picInfos[selIndex].id,
-                                );
-                              }));
-                            }
-                          },
                           itemBuilder: (BuildContext context, int index) {
                             if (picInfos[index].id == '-1') {
                               return Container(
@@ -264,69 +251,84 @@ class PicPreviewPageState extends State<PicPreviewPage>
                                 ),
                               );
                             }
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(8), //设置圆角
-                              //圆角组件
-                              child: ExtendedImage.network(
-                                Config.downloadUrl +
-                                    picInfos[index].fileName +
-                                    '_preview.' +
-                                    picInfos[index].type,
-                                mode: ExtendedImageMode.gesture,
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(8.0)),
-                                color: SetColors.transparent,
-                                loadStateChanged: (ExtendedImageState state) {
-                                  switch (state.extendedImageLoadState) {
-                                    case LoadState.loading:
-                                      _controller.reset();
-                                      return Container(
-                                        color: SetColors.mainColor,
-                                        width: 40.0,
-                                        height: 40.0,
-
-                                        ///限制大小无效是设置此属性
-                                        alignment: Alignment.center,
-                                        child: CircularProgressIndicator(
-                                          color: SetColors.white,
-                                        ),
-                                      );
-                                      break;
-
-                                    ///if you don't want override completed widget
-                                    ///please return null or state.completedWidget
-                                    //return null;
-                                    //return state.completedWidget;
-                                    case LoadState.completed:
-                                      return ExtendedRawImage(
-                                        image: state.extendedImageInfo?.image,
-                                        fit: BoxFit.cover,
-                                      );
-                                      break;
-                                    case LoadState.failed:
-                                      _controller.reset();
-                                      return Container(
-                                        margin: EdgeInsets.all(2),
-                                        decoration: BoxDecoration(
+                            return GestureDetector(
+                              onTap: () {
+                                if (picInfos[index].id != '-1') {
+                                  Navigator.push(context,
+                                      MaterialPageRoute(builder: (context) {
+                                    return PicDetailPage(
+                                      cat: widget.cat,
+                                      keyword: widget.keyword,
+                                      operType: widget.operType,
+                                      id: picInfos[index].id,
+                                    );
+                                  }));
+                                }
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8), //设置圆角
+                                //圆角组件
+                                child: ExtendedImage.network(
+                                  Config.downloadUrl +
+                                      picInfos[index].fileName +
+                                      '_preview.' +
+                                      picInfos[index].type,
+                                  mode: ExtendedImageMode.gesture,
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(8.0)),
+                                  color: SetColors.transparent,
+                                  loadStateChanged: (ExtendedImageState state) {
+                                    switch (state.extendedImageLoadState) {
+                                      case LoadState.loading:
+                                        _controller.reset();
+                                        return Container(
                                           color: SetColors.mainColor,
-                                          borderRadius: BorderRadius.all(
-                                              Radius.circular(8.0)),
-                                        ),
+                                          width: 40.0,
+                                          height: 40.0,
 
-                                        ///限制大小无效是设置此属性
-                                        alignment: Alignment.center,
-                                        child: SvgPicture.asset(
-                                            'assets/pic_error.svg',
-                                            width: 40.0,
-                                            height: 40.0,
-                                            color: SetColors.white),
-                                      );
-                                      break;
-                                    default:
-                                      return Container();
-                                      break;
-                                  }
-                                },
+                                          ///限制大小无效是设置此属性
+                                          alignment: Alignment.center,
+                                          child: CircularProgressIndicator(
+                                            color: SetColors.white,
+                                          ),
+                                        );
+                                        break;
+
+                                      ///if you don't want override completed widget
+                                      ///please return null or state.completedWidget
+                                      //return null;
+                                      //return state.completedWidget;
+                                      case LoadState.completed:
+                                        return ExtendedRawImage(
+                                          image: state.extendedImageInfo?.image,
+                                          fit: BoxFit.cover,
+                                        );
+                                        break;
+                                      case LoadState.failed:
+                                        _controller.reset();
+                                        return Container(
+                                          margin: EdgeInsets.all(2),
+                                          decoration: BoxDecoration(
+                                            color: SetColors.mainColor,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(8.0)),
+                                          ),
+
+                                          ///限制大小无效是设置此属性
+                                          alignment: Alignment.center,
+                                          child: SvgPicture.asset(
+                                              'assets/pic_error.svg',
+                                              width: 40.0,
+                                              height: 40.0,
+                                              color: SetColors.white),
+                                        );
+                                        break;
+                                      default:
+                                        return Container();
+                                        break;
+                                    }
+                                  },
+                                ),
                               ),
                             );
                           },

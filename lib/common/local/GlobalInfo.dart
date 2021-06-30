@@ -58,4 +58,14 @@ class GlobalInfo {
   setBannerAd(Future<Null> banner) {
     this.bannerAd = banner;
   }
+
+  DateTime watchDateTime;
+
+  DateTime getWatchDateTime() {
+    return watchDateTime;
+  }
+
+  setWatchDateTime(DateTime dateTime) {
+    this.watchDateTime = dateTime;
+  }
 }

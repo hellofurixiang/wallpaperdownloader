@@ -43,8 +43,8 @@ android {
         applicationId "com.free.aesthetic.wallpaper.hd4k.hd.wallpaperdownloader"
         minSdkVersion 21
         targetSdkVersion 30
-        versionCode 104
-        versionName 'V1.04'
+        versionCode 105
+        versionName 'V1.05'
 
         multiDexEnabled true
 

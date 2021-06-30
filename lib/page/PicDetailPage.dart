@@ -184,52 +184,7 @@ class PicDetailPageState extends State<PicDetailPage>
     }
   }
 
-  showRewardedAd(Function operFun) async {
-    DateTime date = DateTime.now();
-
-    String watchDate =
-        "${date.year.toString()}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
-    WatchAdEntity watchAdEntity = await watchAdProvider.findOne(watchDate);
-    bool showRewardedAd = false;
-    bool showInterstitialAd = false;
-
-    if (watchAdEntity != null) {
-      if (watchAdEntity.watchRewardedAd == 10 &&
-          watchAdEntity.watchInterstitialAd == 10) {
-        operFun();
-        return;
-      }
-      if (watchAdEntity.watchRewardedAd < 10) {
-        showRewardedAd = true;
-      } else {
-        if (watchAdEntity.watchInterstitialAd < 10) {
-          showInterstitialAd = true;
-        }
-      }
-    } else {
-      showRewardedAd = true;
-    }
-    WidgetUtil.showLoadingDialog(context, text: 'Loading ads...');
-
-    ///GlobalInfo.instance.setShowBannerAdState(1);
-    if (showRewardedAd) {
-      AdMobService.showRewardedAd(context, onAdLoad: () {}, onAdClosed: () {
-        ///GlobalInfo.instance.setShowBannerAdState(2);
-        ///changeAdvertising();
-        watchAdProvider.updateWatchRewardedAd(watchDate);
-        operFun();
-      });
-    } else {
-      AdMobService.showInterstitialAd(
-          onAdLoaded: () {},
-          onAdClosed: () {
-            watchAdProvider.updateWatchInterstitialAd(watchDate);
-            operFun();
-          });
-    }
-  }
-
+  ///下载操作
   downloadFile() async {
     WidgetUtil.showLoadingDialog(context, text: 'download...');
     //GlobalInfo.instance.setShowBannerAdState(2);
@@ -302,7 +257,7 @@ class PicDetailPageState extends State<PicDetailPage>
                 WidgetUtil.showConfirmDialog(
                     context, 'Are you sure want to download this wallpaper?',
                     () async {
-                  showRewardedAd(downloadFile);
+                  WidgetUtil.showAd(context, watchAdProvider, downloadFile);
                 });
               },
               child: Image(
@@ -360,7 +315,7 @@ class PicDetailPageState extends State<PicDetailPage>
   quickApply() async {
     WidgetUtil.showAlertDialog(context, 'Set this image as wallpaper?',
         () async {
-      showRewardedAd(setWallpaper);
+      WidgetUtil.showAd(context, watchAdProvider, setWallpaper);
     });
 
     /*WidgetUtil.showAlertDialog(context, 'Set this image as wallpaper?',
@@ -381,19 +336,25 @@ class PicDetailPageState extends State<PicDetailPage>
     });*/
   }
 
+  ///设置壁纸
   setWallpaper() async {
-    String re;
-    if (localImgUrl != null) {
-      re = await WallpaperManager.setWallpaperFromFile(
-          localImgUrl, WallpaperManager.BOTH_SCREENS);
-    } else {
-      re = await Wallpaper.bothScreen(fullPath);
-    }
-    if (re == 'Both screen' || re == 'Wallpaper set') {
-      WidgetUtil.showToast(msg: 'Set wallpaper successfully');
-    } else {
-      WidgetUtil.showToast(msg: 'Set wallpaper error');
-    }
+    WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+    Future.delayed(Duration(milliseconds: 500), () async {
+      String re;
+      if (localImgUrl != null) {
+        re = await WallpaperManager.setWallpaperFromFile(
+            localImgUrl, WallpaperManager.BOTH_SCREENS);
+      } else {
+        re = await Wallpaper.bothScreen(fullPath);
+      }
+      if (re == 'Both screen' || re == 'Wallpaper set') {
+        Navigator.pop(context);
+        WidgetUtil.showToast(msg: 'Set wallpaper successfully');
+      } else {
+        Navigator.pop(context);
+        WidgetUtil.showToast(msg: 'Set wallpaper error');
+      }
+    });
   }
 
   goToEdit() {

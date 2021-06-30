@@ -31,7 +31,7 @@ class Config {
   ///标准屏幕宽度
   static const int screenWidth = 600;
 
-  static const String versionName = 'V1.04';
+  static const String versionName = 'V1.05';
   static const String appName = 'Wallpaper HD';
 
   static const String mainPage = 'MainPage';

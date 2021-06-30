@@ -10,7 +10,6 @@ import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
 import 'package:wallpaperdownloader/page/AdvertisingPage.dart';
 import 'package:wallpaperdownloader/page/CatListPage.dart';
-import 'package:wallpaperdownloader/page/CommonState.dart';
 import 'package:wallpaperdownloader/page/PopularPage.dart';
 import 'package:wallpaperdownloader/page/RandomPage.dart';
 import 'package:wallpaperdownloader/page/RecentPage.dart';
@@ -21,7 +20,7 @@ class MainPage extends StatefulWidget {
   MainPageState createState() => new MainPageState();
 }
 
-class MainPageState extends CommonState<MainPage>
+class MainPageState extends State<MainPage>
     with TickerProviderStateMixin {
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 

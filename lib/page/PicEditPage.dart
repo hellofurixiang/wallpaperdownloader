@@ -78,17 +78,24 @@ class PicEditPageState extends State<PicEditPage>
         }
       }
 
-      /// 保存图片
-      final result = await ImageGallerySaver.saveImage(fileData);
+      WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+      Future.delayed(Duration(milliseconds: 500), () async {
+        /// 保存图片
+        final result = await ImageGallerySaver.saveImage(fileData);
 
-      if (result == null || result == '') throw '图片保存失败';
+        if (result == null || result == '') throw '图片保存失败';
 
-      String setWallpaperResult = await WallpaperManager.setWallpaperFromFile(
-          result['filePath'].toString().replaceAll('file://', ''),
-          WallpaperManager.BOTH_SCREENS);
+        String re = await WallpaperManager.setWallpaperFromFile(
+            result['filePath'].toString().replaceAll('file://', ''),
+            WallpaperManager.BOTH_SCREENS);
 
-      WidgetUtil.showToast(msg: setWallpaperResult);
-      Navigator.pop(context);
+        if (re == 'Wallpaper set') {
+          WidgetUtil.showToast(msg: 'Set wallpaper successfully');
+        } else {
+          WidgetUtil.showToast(msg: 'Set wallpaper error');
+        }
+        Navigator.pop(context);
+      });
     } catch (e) {
       WidgetUtil.showToast(msg: 'Set wallpaper error!');
       //print(e.toString());
@@ -107,51 +114,6 @@ class PicEditPageState extends State<PicEditPage>
   }*/
 
 
-  showRewardedAd(Function operFun) async {
-    DateTime date = DateTime.now();
-
-    String watchDate =
-        "${date.year.toString()}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-
-    WatchAdEntity watchAdEntity = await watchAdProvider.findOne(watchDate);
-    bool showRewardedAd = false;
-    bool showInterstitialAd = false;
-
-    if (watchAdEntity != null) {
-      if (watchAdEntity.watchRewardedAd == 10 &&
-          watchAdEntity.watchInterstitialAd == 10) {
-        operFun();
-        return;
-      }
-      if (watchAdEntity.watchRewardedAd < 10) {
-        showRewardedAd = true;
-      } else {
-        if (watchAdEntity.watchInterstitialAd < 10) {
-          showInterstitialAd = true;
-        }
-      }
-    } else {
-      showRewardedAd = true;
-    }
-    WidgetUtil.showLoadingDialog(context, text: 'Loading ads...');
-
-    ///GlobalInfo.instance.setShowBannerAdState(1);
-    if (showRewardedAd) {
-      AdMobService.showRewardedAd(context, onAdLoad: () {}, onAdClosed: () {
-        ///GlobalInfo.instance.setShowBannerAdState(2);
-        ///changeAdvertising();
-        watchAdProvider.updateWatchRewardedAd(watchDate);
-        operFun();
-      });
-    } else {
-      AdMobService.showInterstitialAd(
-          onAdLoaded: () {},
-          onAdClosed: () {
-            watchAdProvider.updateWatchInterstitialAd(watchDate);
-            operFun();
-          });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -188,7 +150,7 @@ class PicEditPageState extends State<PicEditPage>
                 //显示对话框
                 WidgetUtil.showAlertDialog(
                     context, 'Set this image as wallpaper?', () {
-                  showRewardedAd(cropImage);
+                  WidgetUtil.showAd(context, watchAdProvider, cropImage);
                 });
               },
               child: Container(

@@ -95,7 +95,7 @@ class WatchAdProvider extends BaseDbProvider {
         .query(name, where: "$columnWatchDate = ?", whereArgs: [watchDate]);
     if (maps.length > 0) {
       String sql1 =
-          'UPDATE $name SET $watchInterstitialAd=$watchInterstitialAd+1 WHERE $columnWatchDate=?';
+          'UPDATE $name SET $columnWatchInterstitialAd=$columnWatchInterstitialAd+1 WHERE $columnWatchDate=?';
       int count = await db.rawUpdate(sql1, [watchDate]);
       return count > 0;
     } else {
@@ -116,6 +116,9 @@ class WatchAdProvider extends BaseDbProvider {
 
       return count > 0;
     } else {
+
+      await db.delete(name, where: "$columnWatchDate != ? ", whereArgs: [watchDate]);
+
       int count = await db.insert(name, toMap(watchDate, 0, 1));
       return count > 0;
     }
