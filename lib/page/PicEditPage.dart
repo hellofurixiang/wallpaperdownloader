@@ -229,6 +229,9 @@ class PicEditPageState extends State<PicEditPage>
         /*initGestureConfigHandler: (ExtendedImageState state) {
           return initGestureConfigHandler(state);
         },*/
+        loadStateChanged: (ExtendedImageState state) {
+          return loadStateChanged(state);
+        },
       );
     } else {
       return ExtendedImage.network(
@@ -247,6 +250,9 @@ class PicEditPageState extends State<PicEditPage>
         /*initGestureConfigHandler: (ExtendedImageState state) {
           return initGestureConfigHandler(state);
         },*/
+        loadStateChanged: (ExtendedImageState state) {
+          return loadStateChanged(state);
+        },
       );
     }
   }
@@ -285,14 +291,15 @@ class PicEditPageState extends State<PicEditPage>
       //return null;
       //return state.completedWidget;
       case LoadState.completed:
-        _controller.forward();
+        return null;
+        /*_controller.forward();
         return FadeTransition(
           opacity: _controller,
           child: ExtendedRawImage(
             image: state.extendedImageInfo?.image,
             fit: BoxFit.contain,
           ),
-        );
+        );*/
         break;
       case LoadState.failed:
         _controller.reset();

@@ -64,7 +64,7 @@ class CatPicListPageState extends State<CatPicListPage> {
   Future<void> initData(int page) async {
     Map<String, String> params = {
       'page': page.toString(),
-      'size': '20',
+      'size': ConstantConfig.pageSize,
       'cat': widget.cat,
     };
     ApiUtil.getListByCat(context, params, successCallBack, errorCallBack);
@@ -91,14 +91,14 @@ class CatPicListPageState extends State<CatPicListPage> {
   int nativeAdCount = 0;
   ///成功方法处理
   void successCallBack(res) {
-    if (res['code'] == '1') {
+    if (res[ConstantConfig.code] == '1') {
       if (page == 1) {
         imgList = [];
       }
       setState(() {
         loading = false;
-        for (int i = 0; i < res['resBody']['records'].length; i++) {
-          imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+        for (int i = 0; i < res[ConstantConfig.resBody]['records'].length; i++) {
+          imgList.add(PicInfo.fromJson(res[ConstantConfig.resBody]['records'][i]));
           if (imgList.length == ConstantConfig.loadAdCount) {
             imgList.add(PicInfo.nativeAd('-1'));
             nativeAdCount += 1;
@@ -110,14 +110,14 @@ class CatPicListPageState extends State<CatPicListPage> {
         }
       });
 
-      if (res['resBody']['records'] == null ||
-          res['resBody']['records'].length == 0) {
+      if (res[ConstantConfig.resBody]['records'] == null ||
+          res[ConstantConfig.resBody]['records'].length == 0) {
         load = 3;
       } else {
         load = 0;
       }
     } else {
-      WidgetUtil.showToast(msg: res['message']);
+      WidgetUtil.showToast(msg: res[ConstantConfig.message]);
     }
   }
 
@@ -159,7 +159,7 @@ class CatPicListPageState extends State<CatPicListPage> {
                   ),
                 ),
                 Expanded(
-                  flex: 1,
+                  flex: 2,
                   child: Container(
                     alignment: Alignment.center,
                     child: Text(

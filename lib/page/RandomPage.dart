@@ -51,7 +51,7 @@ class RandomPageState extends State<RandomPage> {
   Future<void> initData(int page) async {
     Map<String, String> params = {
       'page': page.toString(),
-      'size': '20',
+      'size': ConstantConfig.pageSize,
       'operType': operType,
     };
     ApiUtil.getList(context, params, successCallBack, errorCallBack);
@@ -80,14 +80,14 @@ class RandomPageState extends State<RandomPage> {
 
   ///成功方法处理
   void successCallBack(res) {
-    if (res['code'] == '1') {
+    if (res[ConstantConfig.code] == '1') {
       if (page == 1) {
         imgList = [];
       }
       setState(() {
         loading = false;
-        for (int i = 0; i < res['resBody']['records'].length; i++) {
-          imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+        for (int i = 0; i < res[ConstantConfig.resBody]['records'].length; i++) {
+          imgList.add(PicInfo.fromJson(res[ConstantConfig.resBody]['records'][i]));
           if (imgList.length == ConstantConfig.loadAdCount) {
             imgList.add(PicInfo.nativeAd('-1'));
             nativeAdCount += 1;
@@ -99,14 +99,14 @@ class RandomPageState extends State<RandomPage> {
         }
       });
 
-      if (res['resBody']['records'] == null ||
-          res['resBody']['records'].length == 0) {
+      if (res[ConstantConfig.resBody]['records'] == null ||
+          res[ConstantConfig.resBody]['records'].length == 0) {
         load = 3;
       } else {
         load = 0;
       }
     } else {
-      WidgetUtil.showToast(msg: res['message']);
+      WidgetUtil.showToast(msg: res[ConstantConfig.message]);
     }
   }
 

@@ -57,7 +57,7 @@ class CatListPageState extends State<CatListPage> {
   Future<void> initData(int page) async {
     Map<String, String> params = {
       'page': page.toString(),
-      'size': '5',
+      'size': ConstantConfig.pageSize,
     };
     ApiUtil.getCatList(context, params, successCallBack, errorCallBack);
   }
@@ -83,27 +83,27 @@ class CatListPageState extends State<CatListPage> {
 
   ///成功方法处理
   void successCallBack(res) {
-    if (res['code'] == '1') {
+    if (res[ConstantConfig.code] == '1') {
       if (page == 1) {
         imgList = [];
       }
       setState(() {
         loading = false;
-        for (int i = 0; i < res['resBody'].length; i++) {
-          imgList.add(CatInfo.fromJson(res['resBody'][i]));
-          if ((i >= 4) && (i % 4 == 0)) {
+        for (int i = 0; i < res[ConstantConfig.resBody].length; i++) {
+          imgList.add(CatInfo.fromJson(res[ConstantConfig.resBody][i]));
+          if ((i >= 2) && (i % 2 == 0)) {
             imgList.add(CatInfo.nativeAd('-1'));
           }
         }
       });
 
-      if (res['resBody'] == null || res['resBody'].length == 0) {
+      if (res[ConstantConfig.resBody] == null || res[ConstantConfig.resBody].length == 0) {
         load = 3;
       } else {
         load = 0;
       }
     } else {
-      WidgetUtil.showToast(msg: res['message']);
+      WidgetUtil.showToast(msg: res[ConstantConfig.message]);
     }
   }
 

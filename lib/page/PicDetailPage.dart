@@ -95,8 +95,8 @@ class PicDetailPageState extends State<PicDetailPage>
       'id': widget.id,
     }, (res) async {
       //Navigator.pop(context);
-      if (res['code'] == '1') {
-        PicInfo newPicInfo = PicInfo.fromJson(res['resBody']);
+      if (res[ConstantConfig.code] == '1') {
+        PicInfo newPicInfo = PicInfo.fromJson(res[ConstantConfig.resBody]);
 
         HangInfoProvider provider = new HangInfoProvider();
 
@@ -128,7 +128,7 @@ class PicDetailPageState extends State<PicDetailPage>
           }
         });
       } else {
-        WidgetUtil.showToast(msg: res['message']);
+        WidgetUtil.showToast(msg: res[ConstantConfig.message]);
       }
     }, (err) {
       Navigator.pop(context);
@@ -145,7 +145,7 @@ class PicDetailPageState extends State<PicDetailPage>
   changeCollection() {
     if (favoriteBo) {
       ApiUtil.removeCollection(context, picInfo.id, (res) async {
-        if (res['code'] == '1') {
+        if (res[ConstantConfig.code] == '1') {
           bool bo = await provider.updateFavorite(
               picInfo.id, picInfo.fileName + '_thumbnail.' + picInfo.type, 0);
           if (bo) {
@@ -155,12 +155,12 @@ class PicDetailPageState extends State<PicDetailPage>
             });
           }
         } else {
-          WidgetUtil.showToast(msg: res['message']);
+          WidgetUtil.showToast(msg: res[ConstantConfig.message]);
         }
       }, (err) {});
     } else {
       ApiUtil.changeCollection(context, picInfo.id, (res) async {
-        if (res['code'] == '1') {
+        if (res[ConstantConfig.code] == '1') {
           bool count = await provider.updateFavorite(
               picInfo.id, picInfo.fileName + '_thumbnail.' + picInfo.type, 1);
           if (count) {
@@ -170,7 +170,7 @@ class PicDetailPageState extends State<PicDetailPage>
             });
           }
         } else {
-          WidgetUtil.showToast(msg: res['message']);
+          WidgetUtil.showToast(msg: res[ConstantConfig.message]);
         }
       }, (err) {});
     }
@@ -440,16 +440,14 @@ class PicDetailPageState extends State<PicDetailPage>
       //return null;
       //return state.completedWidget;
       case LoadState.completed:
-        _controller.forward();
-        return FadeTransition(
-          opacity: _controller,
-          child: ExtendedRawImage(
+        return null;
+        /*_controller.forward();
+        return  ExtendedRawImage(
             image: state.extendedImageInfo?.image,
-            fit: BoxFit.contain,
-            width: 300,
-            height: 300,
-          ),
-        );
+            //fit: BoxFit.contain,
+            //width: 300,
+            //height: 300,
+        );*/
         break;
       case LoadState.failed:
         _controller.reset();
@@ -501,13 +499,13 @@ class PicDetailPageState extends State<PicDetailPage>
                     )
                   : ExtendedImage.network(
                       imgPath,
-                      fit: BoxFit.contain,
+                      //fit: BoxFit.contain,
                       mode: ExtendedImageMode.gesture,
                       cache: true,
-                      /*initGestureConfigHandler: (ExtendedImageState state) {
+                      initGestureConfigHandler: (ExtendedImageState state) {
                         return initGestureConfigHandler(state);
-                      },*/
-                      //loadStateChanged: (ExtendedImageState state){return loadStateChanged(state);},
+                      },
+                      loadStateChanged: (ExtendedImageState state){return loadStateChanged(state);},
                     )),
           Positioned(
             top: CommonUtil.getStatusBarHeight(context) + 10.0,

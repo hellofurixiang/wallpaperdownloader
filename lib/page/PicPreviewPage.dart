@@ -129,13 +129,13 @@ class PicPreviewPageState extends State<PicPreviewPage>
         'id': picInfos[selIndex].id,
         'operType': widget.operType,
         'nextOrPre': bo,
-        'size': 20
+        'size': ConstantConfig.pageSize
       }, (res) async {
         //Navigator.pop(context);
-        if (res['code'] == '1') {
+        if (res[ConstantConfig.code] == '1') {
           List<PicInfo> newPicInfoList = [];
-          for (int i = 0; i < res['resBody'].length; i++) {
-            PicInfo newPicInfo = PicInfo.fromJson(res['resBody'][i]);
+          for (int i = 0; i < res[ConstantConfig.resBody].length; i++) {
+            PicInfo newPicInfo = PicInfo.fromJson(res[ConstantConfig.resBody][i]);
             if (newPicInfo.id == widget.id ||
                 newPicInfo.id == widget.picInfo.id) {
               continue;
@@ -152,7 +152,7 @@ class PicPreviewPageState extends State<PicPreviewPage>
             isLoad = false;
           });
         } else {
-          WidgetUtil.showToast(msg: res['message']);
+          WidgetUtil.showToast(msg: res[ConstantConfig.message]);
         }
       }, (err) {
         Navigator.pop(context);

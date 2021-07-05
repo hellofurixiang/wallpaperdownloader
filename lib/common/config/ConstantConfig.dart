@@ -48,4 +48,11 @@ class ConstantConfig {
   ///列表加载广告间隔数
   static const int loadAdCount = 9;
 
+
+  static const String pageSize = '20';
+  static const String code = 'code';
+  static const String resBody = 'resBody';
+  static const String message = 'message';
+
+
 }

@@ -69,7 +69,7 @@ class SearchPageState extends State<SearchPage> {
   Future<void> initData() async {
     Map<String, String> params = {
       'page': page.toString(),
-      'size': '20',
+      'size': ConstantConfig.pageSize,
       'keyword': keyword,
     };
     ApiUtil.getSearchList(context, params, successCallBack, errorCallBack);
@@ -96,13 +96,13 @@ class SearchPageState extends State<SearchPage> {
   int nativeAdCount = 0;
   ///成功方法处理
   void successCallBack(res) {
-    if (res['code'] == '1') {
+    if (res[ConstantConfig.code] == '1') {
       setState(() {
         if (page == 1) {
           imgList = [];
         }
-        for (int i = 0; i < res['resBody']['records'].length; i++) {
-          imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
+        for (int i = 0; i < res[ConstantConfig.resBody]['records'].length; i++) {
+          imgList.add(PicInfo.fromJson(res[ConstantConfig.resBody]['records'][i]));
 
           if (imgList.length == ConstantConfig.loadAdCount) {
             imgList.add(PicInfo.nativeAd('-1'));
@@ -115,14 +115,14 @@ class SearchPageState extends State<SearchPage> {
         }
       });
 
-      if (res['resBody']['records'] == null ||
-          res['resBody']['records'].length == 0) {
+      if (res[ConstantConfig.resBody]['records'] == null ||
+          res[ConstantConfig.resBody]['records'].length == 0) {
         load = 3;
       } else {
         load = 0;
       }
     } else {
-      WidgetUtil.showToast(msg: res['message']);
+      WidgetUtil.showToast(msg: res[ConstantConfig.message]);
     }
     setState(() {
       loading = false;
