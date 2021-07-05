@@ -69,7 +69,7 @@ class ApiUtil {
         errorCallBack: errorCallBack);
   }
 
-  ///获取数据
+  ///更新收藏数
   static void removeCollection(BuildContext context, String id,
       Function successCallBack, Function errorCallBack) {
     String url = ConstantConfig.address + 'removeCollection';
@@ -80,7 +80,7 @@ class ApiUtil {
         errorCallBack: errorCallBack);
   }
 
-  ///获取数据
+  ///更新下载数
   static void changeDownload(BuildContext context, String id,
       Function successCallBack, Function errorCallBack) {
     String url = ConstantConfig.address + 'changeDownload';
@@ -90,6 +90,18 @@ class ApiUtil {
         successCallBack: successCallBack,
         errorCallBack: errorCallBack);
   }
+
+  ///更新设置壁纸数
+  static void changeSetWallpaperCount(BuildContext context, String id,
+      Function successCallBack, Function errorCallBack) {
+    String url = ConstantConfig.address + 'changeSetWallpaperCount';
+
+    NetUtil.get(context, url,
+        params: {'id': id},
+        successCallBack: successCallBack,
+        errorCallBack: errorCallBack);
+  }
+
 
   ///获取下一条数据
   static void getNextOrPrePicInfo(BuildContext context, Map<String, Object> params,

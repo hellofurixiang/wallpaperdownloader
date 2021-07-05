@@ -13,6 +13,7 @@ import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
 import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/modal/WatchAdEntity.dart';
+import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
@@ -104,10 +105,14 @@ class PicEditPageState extends State<PicEditPage>
         } else {
           WidgetUtil.showToast(msg: 'Set wallpaper error');
         }*/
+
+        ApiUtil.changeSetWallpaperCount(context, widget.picInfo.id, (res) async {}, (err) {});
+
         Navigator.pop(context);
         WidgetUtil.showToast(msg: 'Set wallpaper successfully');
       });
     } catch (e) {
+      Navigator.pop(context);
       WidgetUtil.showToast(msg: 'Set wallpaper error!');
       //print(e.toString());
     }

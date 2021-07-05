@@ -386,6 +386,7 @@ class PicDetailPageState extends State<PicDetailPage>
           WidgetUtil.showToast(msg: 'Set wallpaper error');
         });*/
         }
+        ApiUtil.changeSetWallpaperCount(context, picInfo.id, (res) async {}, (err) {});
         Navigator.pop(context);
         WidgetUtil.showToast(msg: 'Set wallpaper successfully');
       } catch (e) {
