@@ -1,11 +1,11 @@
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:share/share.dart';
-import 'package:wallpaper/wallpaper.dart';
-import 'package:wallpaper_manager/wallpaper_manager.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/db/provider/HangInfoProvider.dart';
 import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
 import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
@@ -103,11 +103,14 @@ class PicDetailPageState extends State<PicDetailPage>
         HangInfoEntity vo = await provider.findOne(newPicInfo.id);
         setState(() {
           picInfo = newPicInfo;
-          imgPath = Config.downloadUrl +
+          imgPath = ConstantConfig.downloadUrl +
               picInfo.fileName +
               '_preview.' +
               picInfo.type;
-          fullPath = Config.downloadUrl + picInfo.fileName + '.' + picInfo.type;
+          fullPath = ConstantConfig.downloadUrl +
+              picInfo.fileName +
+              '.' +
+              picInfo.type;
 
           isLoad = false;
 
@@ -195,6 +198,7 @@ class PicDetailPageState extends State<PicDetailPage>
     setState(() {
       localImgUrl = downloadUrl.replaceAll('file://', '');
     });
+    ApiUtil.changeDownload(context, picInfo.id, (res) async {}, (err) {});
     EquipmentPlugin.editImg(downloadUrl);
   }
 
@@ -238,7 +242,7 @@ class PicDetailPageState extends State<PicDetailPage>
             child: GestureDetector(
               onTap: () {
                 final RenderBox box = context.findRenderObject() as RenderBox;
-                Share.share(Config.shareStr,
+                Share.share(ConstantConfig.shareStr,
                     sharePositionOrigin:
                         box.localToGlobal(Offset.zero) & box.size);
               },
@@ -315,6 +319,7 @@ class PicDetailPageState extends State<PicDetailPage>
   quickApply() async {
     WidgetUtil.showAlertDialog(context, 'Set this image as wallpaper?',
         () async {
+      //setWallpaper();
       WidgetUtil.showAd(context, watchAdProvider, setWallpaper);
     });
 
@@ -340,17 +345,50 @@ class PicDetailPageState extends State<PicDetailPage>
   setWallpaper() async {
     WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
     Future.delayed(Duration(milliseconds: 500), () async {
-      String re;
-      if (localImgUrl != null) {
-        re = await WallpaperManager.setWallpaperFromFile(
+      try {
+        String re;
+        if (localImgUrl != null) {
+          /*re = await WallpaperManager.setWallpaperFromFile(
             localImgUrl, WallpaperManager.BOTH_SCREENS);
-      } else {
-        re = await Wallpaper.bothScreen(fullPath);
-      }
-      if (re == 'Both screen' || re == 'Wallpaper set') {
+        if (re == 'Wallpaper set') {
+          Navigator.pop(context);
+          WidgetUtil.showToast(msg: 'Set wallpaper successfully');
+        } else {
+          Navigator.pop(context);
+          WidgetUtil.showToast(msg: 'Set wallpaper error');
+        }*/
+
+          File file = File(localImgUrl);
+
+          int location =
+              WallpaperManagerFlutter.HOME_SCREEN; //Choose screen type
+
+          await WallpaperManagerFlutter().setwallpaperfromFile(file, location);
+        } else {
+          File cachedimage =
+              await DefaultCacheManager().getSingleFile(fullPath); //image file
+
+          int location =
+              WallpaperManagerFlutter.HOME_SCREEN; //Choose screen type
+
+          await WallpaperManagerFlutter().setwallpaperfromFile(cachedimage, location);
+
+          //re = await Wallpaper.bothScreen(fullPath);
+
+          /*Stream<String> progressString =
+            Wallpaper.ImageDownloadProgress(fullPath);
+        progressString.listen((data) {}, onDone: () async {
+          String both = await Wallpaper.bothScreen();
+          Navigator.pop(context);
+          WidgetUtil.showToast(msg: 'Set wallpaper successfully');
+        }, onError: (error) {
+          Navigator.pop(context);
+          WidgetUtil.showToast(msg: 'Set wallpaper error');
+        });*/
+        }
         Navigator.pop(context);
         WidgetUtil.showToast(msg: 'Set wallpaper successfully');
-      } else {
+      } catch (e) {
         Navigator.pop(context);
         WidgetUtil.showToast(msg: 'Set wallpaper error');
       }

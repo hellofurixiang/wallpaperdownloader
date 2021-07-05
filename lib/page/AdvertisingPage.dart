@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
@@ -86,11 +86,11 @@ class AdvertisingPageState extends State<AdvertisingPage> {
         loading = false;
         for (int i = 0; i < res['resBody']['records'].length; i++) {
           imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
-          if (imgList.length == Config.loadAdCount) {
+          if (imgList.length == ConstantConfig.loadAdCount) {
             imgList.add(PicInfo.nativeAd('-1'));
             nativeAdCount += 1;
-          } else if (imgList.length > Config.loadAdCount &&
-              (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+          } else if (imgList.length > ConstantConfig.loadAdCount &&
+              (imgList.length - nativeAdCount) % ConstantConfig.loadAdCount == 0) {
             imgList.add(PicInfo.nativeAd('-1'));
             nativeAdCount += 1;
           }

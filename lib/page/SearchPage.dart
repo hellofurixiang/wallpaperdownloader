@@ -9,7 +9,7 @@ import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
@@ -104,11 +104,11 @@ class SearchPageState extends State<SearchPage> {
         for (int i = 0; i < res['resBody']['records'].length; i++) {
           imgList.add(PicInfo.fromJson(res['resBody']['records'][i]));
 
-          if (imgList.length == Config.loadAdCount) {
+          if (imgList.length == ConstantConfig.loadAdCount) {
             imgList.add(PicInfo.nativeAd('-1'));
             nativeAdCount += 1;
-          } else if (imgList.length > Config.loadAdCount &&
-              (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+          } else if (imgList.length > ConstantConfig.loadAdCount &&
+              (imgList.length - nativeAdCount) % ConstantConfig.loadAdCount == 0) {
             imgList.add(PicInfo.nativeAd('-1'));
             nativeAdCount += 1;
           }
@@ -176,28 +176,13 @@ class SearchPageState extends State<SearchPage> {
         ///广告
         if (imgList[i].id == '-1') {
           return Container(
+            //color: SetColors.white,
             //height: 60,
             //width: CommonUtil.getScreenWidth(context),
             //padding: EdgeInsets.all(10),
-            //margin: EdgeInsets.only(bottom: 20.0),
+            margin: EdgeInsets.all(10.0),
             alignment: Alignment.center,
-            child: NativeAdmob(
-              loading: Center(
-                child: CircularProgressIndicator(
-                  color: SetColors.white,
-                ),
-              ),
-              adUnitID: AdMobService.nativeAdGeneralUnitId,
-              numberAds: 5,
-              //controller: _nativeAdController,
-              type: NativeAdmobType.full,
-              options: NativeAdmobOptions(
-                headlineTextStyle: NativeTextStyle(
-                  fontSize: 16,
-                  color: Colors.white,
-                ),
-              ),
-            ),
+            child: WidgetUtil.createNativeAdmob(NativeAdmobType.full),
           );
         }
 
@@ -255,7 +240,7 @@ class SearchPageState extends State<SearchPage> {
         );
       },
       staggeredTileBuilder: (int index) {
-        if (((index + 1) % (Config.loadAdCount + 1) == 0)) {
+        if (((index + 1) % (ConstantConfig.loadAdCount + 1) == 0)) {
           return StaggeredTile.count(3, 2);
         } else {
           return StaggeredTile.count(1, 1.5);
@@ -382,26 +367,11 @@ class SearchPageState extends State<SearchPage> {
             bottom: 0.0,
             right: 0.0,
             child: Container(
-              height: 60,
+              height: 70,
               width: CommonUtil.getScreenWidth(context),
               //padding: EdgeInsets.all(10),
               //margin: EdgeInsets.only(bottom: 20.0),
-              child: NativeAdmob(
-                loading: Center(
-                    child: CircularProgressIndicator(
-                  color: SetColors.white,
-                )),
-                adUnitID: AdMobService.nativeAdGeneralUnitId,
-                numberAds: 5,
-                controller: _nativeAdController,
-                type: NativeAdmobType.banner,
-                options: NativeAdmobOptions(
-                  headlineTextStyle: NativeTextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              child: WidgetUtil.createNativeAdmob(NativeAdmobType.banner),
             ),
           ),
         ],

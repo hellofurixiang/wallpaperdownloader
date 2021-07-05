@@ -37,7 +37,7 @@ dependencies:
   shared_preferences: ^2.0.6
 
   json_annotation: ^4.0.1
-  dio: 1.0.1
+  dio: ^4.0.0
 
   fluttertoast: ^8.0.3
 
@@ -87,8 +87,12 @@ dependencies:
   #分享
   share: ^2.0.1
 
-  wallpaper: ^0.0.8
-  wallpaper_manager: ^1.0.10
+  #wallpaper: ^1.0.7
+  #网络/本地图片设置壁纸
+  wallpaper_manager_flutter: ^0.0.2
+  flutter_cache_manager: ^3.1.2
+  #本地图片设置壁纸
+  #wallpaper_manager: ^1.0.10
 
   url_launcher: ^6.0.6
   get_it: ^7.1.4

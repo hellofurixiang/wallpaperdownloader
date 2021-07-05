@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:in_app_review/in_app_review.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/style/StringZh.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
@@ -96,7 +96,7 @@ class MainTopWidgetState extends State<MainTopWidget> {
       child: new Container(
         alignment: Alignment.center,
         child: new Text(
-          Config.appName,
+          ConstantConfig.appName,
           style: new TextStyle(
               color: SetColors.white,
               fontSize: SetConstants.bigTextSize,

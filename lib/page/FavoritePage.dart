@@ -5,7 +5,7 @@ import 'package:flutter_native_admob/flutter_native_admob.dart';
 import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/db/provider/HangInfoProvider.dart';
 import 'package:wallpaperdownloader/common/modal/HangInfoEntity.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
@@ -51,11 +51,11 @@ class FavoritePageState extends State<FavoritePage> {
       //imgList = list;
       for (int i = 0; i < list.length; i++) {
         imgList.add(list[i]);
-        if (imgList.length == Config.loadAdCount) {
+        if (imgList.length == ConstantConfig.loadAdCount) {
           imgList.add(HangInfoEntity.nativeAd('-1'));
           nativeAdCount += 1;
-        } else if (imgList.length > Config.loadAdCount &&
-            (imgList.length - nativeAdCount) % Config.loadAdCount == 0) {
+        } else if (imgList.length > ConstantConfig.loadAdCount &&
+            (imgList.length - nativeAdCount) % ConstantConfig.loadAdCount == 0) {
           imgList.add(HangInfoEntity.nativeAd('-1'));
           nativeAdCount += 1;
         }
@@ -146,31 +146,16 @@ class FavoritePageState extends State<FavoritePage> {
                       ///广告
                       if (imgList[i].imgId == '-1') {
                         return Container(
+                          //color:SetColors.white,
                           //height: 60,
                           //width: CommonUtil.getScreenWidth(context),
                           //padding: EdgeInsets.all(10),
-                          //margin: EdgeInsets.only(bottom: 20.0),
+                          margin: EdgeInsets.all(10.0),
                           alignment: Alignment.center,
-                          child: NativeAdmob(
-                            loading: Center(
-                              child: CircularProgressIndicator(
-                                color: SetColors.white,
-                              ),
-                            ),
-                            adUnitID: AdMobService.nativeAdGeneralUnitId,
-                            numberAds: 5,
-                            //controller: _nativeAdController,
-                            type: NativeAdmobType.full,
-                            options: NativeAdmobOptions(
-                              headlineTextStyle: NativeTextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          child: WidgetUtil.createNativeAdmob(NativeAdmobType.full),
                         );
                       }
-                      String imgPath = Config.downloadUrl + imgList[i].fileName;
+                      String imgPath = ConstantConfig.downloadUrl + imgList[i].fileName;
                       return GestureDetector(
                         onTap: () {
                           //AdMobService.showInterstitialAd();
@@ -229,7 +214,7 @@ class FavoritePageState extends State<FavoritePage> {
                       );
                     },
                     staggeredTileBuilder: (int index) {
-                      if (((index + 1) % (Config.loadAdCount + 1) == 0)) {
+                      if (((index + 1) % (ConstantConfig.loadAdCount + 1) == 0)) {
                         return StaggeredTile.count(3, 2);
                       } else {
                         return StaggeredTile.count(1, 1.5);

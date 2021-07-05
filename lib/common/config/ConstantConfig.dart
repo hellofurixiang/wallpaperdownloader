@@ -1,4 +1,4 @@
-class Config {
+class ConstantConfig {
   //static const address = 'http://192.168.1.21:8088/api/app/picInfo/';
   //static const address = 'http://192.168.48.192:8088/api/app/picInfo/';
   static const String address = 'http://47.251.45.10:8900/api/app/picInfo/';
@@ -31,7 +31,7 @@ class Config {
   ///标准屏幕宽度
   static const int screenWidth = 600;
 
-  static const String versionName = 'V1.05';
+  static const String versionName = 'V1.06';
   static const String appName = 'Wallpaper HD';
 
   static const String mainPage = 'MainPage';

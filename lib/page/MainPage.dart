@@ -60,7 +60,7 @@ class MainPageState extends State<MainPage>
     return pages;
   }
 
-  NativeAdmobOptions nativeAdmobOptions= NativeAdmobOptions(
+ /* NativeAdmobOptions nativeAdmobOptions= NativeAdmobOptions(
 
     adLabelTextStyle : NativeTextStyle(
       fontSize: 12,
@@ -93,7 +93,7 @@ class MainPageState extends State<MainPage>
       backgroundColor: Color(0xFF4CBE99),
     ),
   );
-
+*/
 
   @override
   Widget build(BuildContext context) {
@@ -166,7 +166,7 @@ class MainPageState extends State<MainPage>
                               color: SetColors.black,
                               margin: EdgeInsets.only(bottom: 10.0),
                             ),
-                            Container(
+                            /*Container(
                               height: 60,
                               width: CommonUtil.getScreenWidth(context),
                               //padding: EdgeInsets.all(10),
@@ -188,7 +188,7 @@ class MainPageState extends State<MainPage>
                                   ),
                                 ),
                               ),
-                            ),
+                            ),*/
                             Expanded(
                               flex: 1,
                               child: TabBarView(

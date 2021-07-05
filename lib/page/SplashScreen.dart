@@ -4,7 +4,7 @@ import 'dart:math';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
@@ -19,16 +19,18 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   InterstitialAd interstitialAd;
-
+  Timer timer;
   startTime() async {
     ///设置启动图生效时间
-    var _duration = new Duration(seconds: 3);
-    return new Timer(_duration, showInterstitialAd);
+    Duration _duration = new Duration(seconds: 8);
+    timer= new Timer(_duration,  navigationPage);
   }
 
   void showInterstitialAd() {
     AdMobService.showInterstitialAd(
-        onAdLoaded: () {},
+        onAdLoaded: () {
+          timer.cancel();
+        },
         onAdClosed: () {
           navigationPage();
         });
@@ -45,6 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     startTime();
+    showInterstitialAd();
   }
 
   @override
@@ -80,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen> {
             alignment: Alignment.center,
             width: CommonUtil.getScreenWidth(context),
             child: Text(
-              Config.versionName,
+              ConstantConfig.versionName,
               style: TextStyle(
                 fontSize: SetConstants.middleTextSize,
                 color: SetColors.white,
@@ -95,7 +98,7 @@ class _SplashScreenState extends State<SplashScreen> {
             alignment: Alignment.center,
             width: CommonUtil.getScreenWidth(context),
             child: Text(
-              Config.appName,
+              ConstantConfig.appName,
               style: TextStyle(
                 fontSize: SetConstants.veryLagerTextSize,
                 color: SetColors.white,

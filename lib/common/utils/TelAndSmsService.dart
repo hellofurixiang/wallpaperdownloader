@@ -1,6 +1,6 @@
 import 'package:mailto/mailto.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 
 class TelAndSmsService {
   static void call(String number) => launch("tel:$number");
@@ -11,8 +11,8 @@ class TelAndSmsService {
 
   static void launchMailto() async {
     final mailtoLink = Mailto(
-      to: [Config.emailUrl],
-      subject: 'Feedback Version - ${Config.versionName}',
+      to: [ConstantConfig.emailUrl],
+      subject: 'Feedback Version - ${ConstantConfig.versionName}',
       body: '',
     );
     await launch('$mailtoLink');

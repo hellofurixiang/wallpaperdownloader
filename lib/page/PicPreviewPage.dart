@@ -8,7 +8,7 @@ import 'package:flutter_native_admob/native_admob_controller.dart';
 import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/db/provider/HangInfoProvider.dart';
 import 'package:wallpaperdownloader/common/modal/HangInfoEntity.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
@@ -141,9 +141,9 @@ class PicPreviewPageState extends State<PicPreviewPage>
               continue;
             }
             newPicInfoList.add(newPicInfo);
-            if (i % Config.loadAdCount == 0) {
+            /*if (i % Config.loadAdCount == 0) {
               newPicInfoList.add(PicInfo.nativeAd('-1'));
-            }
+            }*/
           }
           setState(() {
             if (newPicInfoList.length > 0) {
@@ -179,7 +179,7 @@ class PicPreviewPageState extends State<PicPreviewPage>
       boxDecoration = BoxDecoration(
         image: new DecorationImage(
           fit: BoxFit.cover,
-          image: new NetworkImage(Config.downloadUrl +
+          image: new NetworkImage(ConstantConfig.downloadUrl +
               picInfos[selIndex].fileName +
               '_preview.' +
               picInfos[selIndex].type),
@@ -225,7 +225,7 @@ class PicPreviewPageState extends State<PicPreviewPage>
                             }
                           },
                           itemBuilder: (BuildContext context, int index) {
-                            if (picInfos[index].id == '-1') {
+                            /*if (picInfos[index].id == '-1') {
                               return Container(
                                 //height: 60,
                                 //width: CommonUtil.getScreenWidth(context),
@@ -250,7 +250,7 @@ class PicPreviewPageState extends State<PicPreviewPage>
                                   ),
                                 ),
                               );
-                            }
+                            }*/
                             return GestureDetector(
                               onTap: () {
                                 if (picInfos[index].id != '-1') {
@@ -269,7 +269,7 @@ class PicPreviewPageState extends State<PicPreviewPage>
                                 borderRadius: BorderRadius.circular(8), //设置圆角
                                 //圆角组件
                                 child: ExtendedImage.network(
-                                  Config.downloadUrl +
+                                  ConstantConfig.downloadUrl +
                                       picInfos[index].fileName +
                                       '_preview.' +
                                       picInfos[index].type,
@@ -359,26 +359,12 @@ class PicPreviewPageState extends State<PicPreviewPage>
             bottom: 0.0,
             left: 0.0,
             child: Container(
-              height: 60,
+              //color: SetColors.white,
+              height: 70,
               width: CommonUtil.getScreenWidth(context),
-              //padding: EdgeInsets.all(10),
-              //margin: EdgeInsets.only(bottom: 20.0),
-              child: NativeAdmob(
-                loading: Center(
-                    child: CircularProgressIndicator(
-                  color: SetColors.white,
-                )),
-                adUnitID: AdMobService.nativeAdGeneralUnitId,
-                numberAds: 5,
-                controller: _nativeAdController,
-                type: NativeAdmobType.banner,
-                options: NativeAdmobOptions(
-                  headlineTextStyle: NativeTextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
+              padding: EdgeInsets.only(left:10.0,right: 10.0),
+              //margin: EdgeInsets.all(10.0),
+              child: WidgetUtil.createNativeAdmob(NativeAdmobType.banner),
             ),
           ),
         ],

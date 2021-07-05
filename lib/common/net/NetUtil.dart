@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:connectivity/connectivity.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/net/Code.dart';
 import 'package:wallpaperdownloader/common/style/StringZh.dart';
 import 'package:wallpaperdownloader/common/utils/LogUtils.dart';
@@ -17,11 +17,11 @@ class NetUtil {
   ///get请求
   static void get(BuildContext context, String url,
       {Object params,
-      ContentType contentType,
-      ResponseType responseType,
-      Function successCallBack,
-      Function errorCallBack}) async {
-    request(context, url, Config.method_get,
+        String contentType,
+        ResponseType responseType,
+        Function successCallBack,
+        Function errorCallBack}) async {
+    request(context, url, ConstantConfig.method_get,
         params: params,
         contentType: contentType,
         responseType: responseType,
@@ -32,11 +32,11 @@ class NetUtil {
   ///post请求
   static void post(BuildContext context, String url,
       {Object params,
-      ContentType contentType,
-      ResponseType responseType,
-      Function successCallBack,
-      Function errorCallBack}) async {
-    request(context, url, Config.method_post,
+        String contentType,
+        ResponseType responseType,
+        Function successCallBack,
+        Function errorCallBack}) async {
+    request(context, url, ConstantConfig.method_post,
         params: params,
         contentType: contentType,
         responseType: responseType,
@@ -76,10 +76,9 @@ class NetUtil {
   ///multipart/form-data：表单上传文件的格式
 
   ///请求配置
-  static getBaseOptions(
-      {ContentType contentType,
-      ResponseType responseType,
-      String method}) async {
+  static getBaseOptions({String contentType,
+    ResponseType responseType,
+    String method}) async {
     await getHeaders();
 
     LogUtils.i(logTag, '<net> headers:');
@@ -102,19 +101,18 @@ class NetUtil {
     options.headers.addAll(headers);
 
     ///超时时间
-    options.connectTimeout = Config.connectTimeout;
-    options.receiveTimeout = Config.receiveTimeout;
+    options.sendTimeout = ConstantConfig.connectTimeout;
+    options.receiveTimeout = ConstantConfig.receiveTimeout;
 
-    options.method = method ?? Config.method_get;
+    options.method = method ?? ConstantConfig.method_get;
 
     return options;
   }
 
   ///请求配置
-  static getOptions(
-      {ContentType contentType,
-      ResponseType responseType,
-      String method}) async {
+  static getOptions({String contentType,
+    ResponseType responseType,
+    String method}) async {
     await getHeaders();
 
     LogUtils.i(logTag, '<net> headers:');
@@ -134,13 +132,13 @@ class NetUtil {
     }
 
     ///请求头
-    options.headers.addAll(headers);
+    //options.headers.addAll(headers);
 
     ///超时时间
-    options.connectTimeout = Config.connectTimeout;
-    options.receiveTimeout = Config.receiveTimeout;
+    options.sendTimeout = ConstantConfig.connectTimeout;
+    options.receiveTimeout = ConstantConfig.receiveTimeout;
 
-    options.method = method ?? Config.method_get;
+    options.method = method ?? ConstantConfig.method_get;
 
     return options;
   }
@@ -149,14 +147,14 @@ class NetUtil {
   ///公共代码部分
   static void request(BuildContext context, String url, String method,
       {Object params,
-      ContentType contentType,
-      ResponseType responseType,
-      Function successCallBack,
-      Function errorCallBack}) async {
+        String contentType,
+        ResponseType responseType,
+        Function successCallBack,
+        Function errorCallBack}) async {
     ///网络连接判断
     var connectivityResult = await (new Connectivity().checkConnectivity());
     if (connectivityResult == ConnectivityResult.none) {
-      WidgetUtil.showToast(msgType: Config.error, msg: StringZh.net_error);
+      WidgetUtil.showToast(msgType: ConstantConfig.error, msg: StringZh.net_error);
       return;
     }
 
@@ -172,8 +170,15 @@ class NetUtil {
         contentType: contentType, responseType: responseType, method: method);
 
     try {
-      Response response =
-          await Dio().request(url, data: params, options: options);
+      Response response;
+
+      if (ConstantConfig.method_post == method) {
+        response =
+        await Dio().post(url, data: params, options: options);
+      } else {
+        response =
+        await Dio().get(url, queryParameters: params, options: options);
+      }
 
       int statusCode = response.statusCode;
 
@@ -194,7 +199,7 @@ class NetUtil {
         successCallBack(response.data);
       } catch (e) {
         catchError(e, context, errorCallBack: (err) {
-          WidgetUtil.showToast(msgType: Config.error, msg: err);
+          WidgetUtil.showToast(msgType: ConstantConfig.error, msg: err);
         });
       }
     } on DioError catch (e) {
@@ -203,7 +208,7 @@ class NetUtil {
             e.response.data["name"].contains('token')) {
           if (e.response.data["message"] != null) {
             WidgetUtil.showToast(
-                msgType: Config.error, msg: e.response.data["message"]);
+                msgType: ConstantConfig.error, msg: e.response.data["message"]);
           }
         } else {
           catchError(e, context, errorCallBack: errorCallBack);
@@ -230,12 +235,12 @@ class NetUtil {
           }
         }
       }
-      if (e.type == DioErrorType.CONNECT_TIMEOUT) {
+      if (e.type == DioErrorType.connectTimeout) {
         statusCode = Code.NETWORK_TIMEOUT;
-      } else if (e.type == DioErrorType.DEFAULT) {
+      } else if (e.type == DioErrorType.other) {
         statusCode = Code.NETWORK_ERROR;
       }
-      if (e.type == DioErrorType.RESPONSE) {
+      if (e.type == DioErrorType.response) {
         //statusCode = 404;
         if ('' == error) {
           error = '请求服务器异常';
@@ -251,7 +256,7 @@ class NetUtil {
   ///处理异常
   static void handError(String errorMsg, {Function errorCallBack}) {
     LogUtils.e(logTag, '<net> errorMsg :' + errorMsg);
-    WidgetUtil.showToast(msgType: Config.error, msg: errorMsg);
+    WidgetUtil.showToast(msgType: ConstantConfig.error, msg: errorMsg);
     if (errorCallBack != null) {
       errorCallBack(errorMsg);
     }

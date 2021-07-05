@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:share/share.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/TelAndSmsService.dart';
@@ -66,7 +66,7 @@ class SettingWidgetState extends State<SettingWidget> {
                             padding: EdgeInsets.only(left: 5.0),
                             height: 40,
                             child: Text(
-                              Config.appName,
+                              ConstantConfig.appName,
                               style: TextStyle(
                                   color: SetColors.white,
                                   fontSize: SetConstants.middleTextSize),
@@ -80,7 +80,7 @@ class SettingWidgetState extends State<SettingWidget> {
                             height: 40,
                             padding: EdgeInsets.only(right: 10.0),
                             child: Text(
-                              Config.versionName,
+                              ConstantConfig.versionName,
                               style: TextStyle(
                                   color: SetColors.white,
                                   fontSize: SetConstants.middleTextSize),
@@ -252,7 +252,7 @@ class SettingWidgetState extends State<SettingWidget> {
                           GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
-                              Share.share(Config.shareStr);
+                              Share.share(ConstantConfig.shareStr);
                             },
                             child: Container(
                               color: SetColors.transparent,

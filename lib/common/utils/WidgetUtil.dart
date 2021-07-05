@@ -10,7 +10,7 @@ import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
 import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
@@ -62,12 +62,12 @@ class WidgetUtil {
                           child: text == null
                               ? Container()
                               : Container(
-                                  margin: EdgeInsets.only(left: 5.0),
-                                  child: Text(
-                                    text,
-                                    style: TextStyle(color: SetColors.darkGrey),
-                                  ),
-                                ),
+                            margin: EdgeInsets.only(left: 5.0),
+                            child: Text(
+                              text,
+                              style: TextStyle(color: SetColors.darkGrey),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -154,11 +154,11 @@ class WidgetUtil {
   }
 
   ///确认框
-  static void showConfirmDialog(
-      BuildContext context, String content, Function confirmFun,
+  static void showConfirmDialog(BuildContext context, String content,
+      Function confirmFun,
       {Color background: SetColors.white,
-      Color contextColor: SetColors.mainColor,
-      Color btnColor: SetColors.mainColor}) {
+        Color contextColor: SetColors.mainColor,
+        Color btnColor: SetColors.mainColor}) {
     showDialog<bool>(
         context: context, //BuildContext对象
         barrierDismissible: false,
@@ -198,11 +198,11 @@ class WidgetUtil {
   }
 
   ///确认框
-  static void showAlertDialog(
-      BuildContext context, String content, Function confirmFun,
+  static void showAlertDialog(BuildContext context, String content,
+      Function confirmFun,
       {Color background: SetColors.white,
-      Color contextColor: SetColors.mainColor,
-      Color btnColor: SetColors.mainColor}) {
+        Color contextColor: SetColors.mainColor,
+        Color btnColor: SetColors.mainColor}) {
     showDialog<bool>(
         context: context, //BuildContext对象
         //barrierDismissible: false,
@@ -257,7 +257,7 @@ class WidgetUtil {
                     alignment: Alignment.center,
                     //height: 40.0,
                     child: Text(
-                      Config.appName,
+                      ConstantConfig.appName,
                       style: TextStyle(
                           color: SetColors.mainColor,
                           fontSize: SetConstants.lagerTextSize,
@@ -268,7 +268,7 @@ class WidgetUtil {
                     alignment: Alignment.center,
                     height: 40.0,
                     child: Text(
-                      'Version ${Config.versionName}',
+                      'Version ${ConstantConfig.versionName}',
                       style: TextStyle(
                         color: SetColors.mainColor,
                       ),
@@ -450,7 +450,8 @@ class WidgetUtil {
   static Future<bool> dialogExitApp(BuildContext context) {
     return showDialog(
       context: context,
-      builder: (context) => new AlertDialog(
+      builder: (context) =>
+      new AlertDialog(
         content: new Text(StringZh.app_back_tip),
         actions: <Widget>[
           new FlatButton(
@@ -468,24 +469,23 @@ class WidgetUtil {
     );
   }
 
-  static showToast(
-      {String msgType: Config.warning,
-      String msg,
-      Color backgroundColor: SetColors.gray,
-      Color textColor: SetColors.white,
-      double fontSize: SetConstants.smallTextSize,
-      int timeInSecForIosWeb: 3}) {
+  static showToast({String msgType: ConstantConfig.warning,
+    String msg,
+    Color backgroundColor: SetColors.gray,
+    Color textColor: SetColors.white,
+    double fontSize: SetConstants.smallTextSize,
+    int timeInSecForIosWeb: 3}) {
     int seconds = 5;
     if (timeInSecForIosWeb == null) {
-      if (msgType == Config.warning || msgType == Config.success) {
+      if (msgType == ConstantConfig.warning || msgType == ConstantConfig.success) {
         seconds = 2;
       }
     } else {
       seconds = timeInSecForIosWeb;
     }
-    if (msgType == Config.error) {
+    if (msgType == ConstantConfig.error) {
       backgroundColor = SetColors.red;
-    } else if (msgType == Config.success) {
+    } else if (msgType == ConstantConfig.success) {
       backgroundColor = Colors.green;
     }
 
@@ -540,10 +540,10 @@ class WidgetUtil {
 
   static void goDetailPage(BuildContext context, String operType,
       {PicInfo picInfo,
-      String cat,
-      String keyword,
-      String id,
-      String fileName}) async {
+        String cat,
+        String keyword,
+        String id,
+        String fileName}) async {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return PicPreviewPage(
         cat: cat,
@@ -602,11 +602,10 @@ class WidgetUtil {
   }
 
   static String getPicUrl(PicInfo picInfo) {
-    return Config.downloadUrl + picInfo.fileName + '_thumbnail.' + picInfo.type;
+    return ConstantConfig.downloadUrl + picInfo.fileName + '_thumbnail.' + picInfo.type;
   }
 
-  static Widget getListWidget(
-      Function onRefresh,
+  static Widget getListWidget(Function onRefresh,
       bool loading,
       ScrollController scrollController,
       List<PicInfo> imgList,
@@ -621,137 +620,129 @@ class WidgetUtil {
             child: loading
                 ? WidgetUtil.getEmptyLoadingWidget()
                 : StaggeredGridView.countBuilder(
-                    //shrinkWrap: true,
-                    controller: scrollController,
-                    padding: EdgeInsets.all(2),
-                    crossAxisCount: 3,
-                    itemCount: imgList.length,
-                    itemBuilder: (context, i) {
-                      ///广告
-                      if (imgList[i].id == '-1') {
-                        return Container(
-                          //height: 60,
-                          //width: CommonUtil.getScreenWidth(context),
-                          //padding: EdgeInsets.all(10),
-                          //margin: EdgeInsets.only(bottom: 20.0),
-                          alignment: Alignment.center,
-                          child: NativeAdmob(
-                            loading: Center(
-                              child: CircularProgressIndicator(
-                                color: SetColors.white,
-                              ),
-                            ),
-                            adUnitID: AdMobService.nativeAdGeneralUnitId,
-                            numberAds: 5,
-                            //controller: _nativeAdController,
-                            type: NativeAdmobType.full,
-                            options: NativeAdmobOptions(
-                              headlineTextStyle: NativeTextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
+              //shrinkWrap: true,
+              controller: scrollController,
+              padding: EdgeInsets.all(2),
+              crossAxisCount: 3,
+              itemCount: imgList.length,
+              itemBuilder: (context, i) {
+                ///广告
+                if (imgList[i].id == '-1') {
+                  return Container(
+                    //color: SetColors.white,
+                    //height: 60,
+                    //width: CommonUtil.getScreenWidth(context),
+                    //padding: EdgeInsets.all(10),
+                    margin: EdgeInsets.all(10),
+                    alignment: Alignment.center,
+                    decoration: BoxDecoration(
+                      //color: SetColors.white,
+                      borderRadius:
+                      BorderRadius.all(Radius.circular(8.0)),
+                    ),
+                    child: WidgetUtil.createNativeAdmob(NativeAdmobType.full),
+                  );
+                }
+
+                String imgPath = WidgetUtil.getPicUrl(imgList[i]);
+                return GestureDetector(
+                  onTap: () {
+                    //AdMobService.showInterstitialAd();
+                    WidgetUtil.goDetailPage(context, operType,
+                        picInfo: imgList[i]);
+
+                    //AdMobService.showInterstitialAd();
+
+                    //AdMobService.showRewardedAd(context,(){});
+                  },
+                  child: CachedNetworkImage(
+                    imageUrl: imgPath,
+                    imageBuilder: (context, imageProvider) {
+                      return Stack(
+                        children: [
+                          Container(
+                            margin: EdgeInsets.all(2),
+                            decoration: BoxDecoration(
+                              color: SetColors.black,
+                              borderRadius:
+                              BorderRadius.all(Radius.circular(8.0)),
+                              image: DecorationImage(
+                                image: imageProvider,
+                                fit: BoxFit.cover,
                               ),
                             ),
                           ),
-                        );
-                      }
-
-                      String imgPath = WidgetUtil.getPicUrl(imgList[i]);
-                      return GestureDetector(
-                        onTap: () {
-                          //AdMobService.showInterstitialAd();
-                          WidgetUtil.goDetailPage(context, operType,
-                              picInfo: imgList[i]);
-
-                          //AdMobService.showInterstitialAd();
-
-                          //AdMobService.showRewardedAd(context,(){});
-                        },
-                        child: CachedNetworkImage(
-                          imageUrl: imgPath,
-                          imageBuilder: (context, imageProvider) {
-                            return Stack(
-                              children: [
-                                Container(
-                                  margin: EdgeInsets.all(2),
-                                  decoration: BoxDecoration(
-                                    color: SetColors.black,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(8.0)),
-                                    image: DecorationImage(
-                                      image: imageProvider,
-                                      fit: BoxFit.cover,
-                                    ),
-                                  ),
-                                ),
-                                isFeatured
-                                    ? Positioned(
-                                        top: 5.0,
-                                        right: 5.0,
-                                        child: Container(
-                                          color: Colors.transparent,
-                                          child: Icon(
-                                            Icons.remove_red_eye_outlined,
-                                            color: SetColors.white,
-                                            size: 20.0,
-                                          ),
-                                        ),
-                                      )
-                                    : Container(),
-                              ],
-                            );
-                          },
-                          placeholder: (context, url) => Container(
-                            margin: EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: SetColors.mainColor,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                            ),
+                          isFeatured
+                              ? Positioned(
+                            top: 5.0,
+                            right: 5.0,
                             child: Container(
-                              color: SetColors.mainColor,
-                              width: 40.0,
-                              height: 40.0,
-
-                              ///限制大小无效是设置此属性
-                              alignment: Alignment.center,
-                              child: CircularProgressIndicator(
+                              color: Colors.transparent,
+                              child: Icon(
+                                Icons.remove_red_eye_outlined,
                                 color: SetColors.white,
+                                size: 20.0,
                               ),
                             ),
+                          )
+                              : Container(),
+                        ],
+                      );
+                    },
+                    placeholder: (context, url) =>
+                        Container(
+                          margin: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: SetColors.mainColor,
+                            borderRadius:
+                            BorderRadius.all(Radius.circular(8.0)),
                           ),
-                          errorWidget: (context, url, error) => Container(
-                            margin: EdgeInsets.all(2),
-                            decoration: BoxDecoration(
-                              color: SetColors.mainColor,
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(8.0)),
-                            ),
+                          child: Container(
+                            color: SetColors.mainColor,
+                            width: 40.0,
+                            height: 40.0,
 
                             ///限制大小无效是设置此属性
                             alignment: Alignment.center,
-                            child: SvgPicture.asset('assets/pic_error.svg',
-                                width: 40.0,
-                                height: 40.0,
-                                color: SetColors.white),
+                            child: CircularProgressIndicator(
+                              color: SetColors.white,
+                            ),
                           ),
                         ),
-                      );
-                    },
-                    staggeredTileBuilder: (int index) {
-                      if (((index + 1) % (Config.loadAdCount + 1) == 0)) {
-                        return StaggeredTile.count(3, 2);
-                      } else {
-                        return StaggeredTile.count(1, 1.5);
-                      }
-                      //横轴和纵轴的数量,控制瀑布流效果
-                      //return StaggeredTile.Count(2,index==0?2.5:3)
+                    errorWidget: (context, url, error) =>
+                        Container(
+                          margin: EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: SetColors.mainColor,
+                            borderRadius:
+                            BorderRadius.all(Radius.circular(8.0)),
+                          ),
 
-                      //return StaggeredTile.fit(1);
-                    },
-                    //crossAxisCount: 4,
-                    //crossAxisSpacing: 4,
-                    //mainAxisSpacing: 10,
+                          ///限制大小无效是设置此属性
+                          alignment: Alignment.center,
+                          child: SvgPicture.asset('assets/pic_error.svg',
+                              width: 40.0,
+                              height: 40.0,
+                              color: SetColors.white),
+                        ),
                   ),
+                );
+              },
+              staggeredTileBuilder: (int index) {
+                if (((index + 1) % (ConstantConfig.loadAdCount + 1) == 0)) {
+                  return StaggeredTile.count(3, 2);
+                } else {
+                  return StaggeredTile.count(1, 1.5);
+                }
+                //横轴和纵轴的数量,控制瀑布流效果
+                //return StaggeredTile.Count(2,index==0?2.5:3)
+
+                //return StaggeredTile.fit(1);
+              },
+              //crossAxisCount: 4,
+              //crossAxisSpacing: 4,
+              //mainAxisSpacing: 10,
+            ),
           ),
         ),
         WidgetUtil.getListLoadMoreOffstage(load),
@@ -777,10 +768,9 @@ class WidgetUtil {
   }
 
 
-
-
   ///弹广告操作
-  static Future showAd(BuildContext context,WatchAdProvider watchAdProvider,Function operFun) async {
+  static Future showAd(BuildContext context, WatchAdProvider watchAdProvider,
+      Function operFun) async {
     DateTime dateNow = DateTime.now();
 
     ///两次广告之间间隔30秒以内不显示广告
@@ -795,15 +785,17 @@ class WidgetUtil {
 
     ///当前日期
     String watchDate =
-        "${dateNow.year.toString()}-${dateNow.month.toString().padLeft(2, '0')}-${dateNow.day.toString().padLeft(2, '0')}";
+        "${dateNow.year.toString()}-${dateNow.month.toString().padLeft(
+        2, '0')}-${dateNow.day.toString().padLeft(2, '0')}";
 
     WatchAdEntity watchAdEntity = await watchAdProvider.findOne(watchDate);
     bool showRewardedAd = false;
     bool showInterstitialAd = false;
 
     if (watchAdEntity != null) {
-
-      print("watchAdEntity.watchRewardedAd:"+watchAdEntity.watchRewardedAd.toString()+'----'+watchAdEntity.watchInterstitialAd.toString());
+      print("watchAdEntity.watchRewardedAd:" +
+          watchAdEntity.watchRewardedAd.toString() + '----' +
+          watchAdEntity.watchInterstitialAd.toString());
       if (watchAdEntity.watchRewardedAd == 10 &&
           watchAdEntity.watchInterstitialAd == 10) {
         operFun();
@@ -839,5 +831,34 @@ class WidgetUtil {
         operFun();
       });
     }
+  }
+
+
+  ///原生广告
+  static Widget createNativeAdmob(NativeAdmobType type) {
+    return NativeAdmob(
+      loading: Center(
+        child: CircularProgressIndicator(
+          color: SetColors.white,
+        ),
+      ),
+      adUnitID: AdMobService.nativeAdGeneralUnitId,
+      numberAds: 5,
+      //controller: _nativeAdController,
+      type: type,
+      options: NativeAdmobOptions(
+        headlineTextStyle: NativeTextStyle(
+          fontSize: 16,
+          color: Colors.white,
+        ), priceTextStyle: NativeTextStyle(
+        fontSize: 12,
+        color: Colors.white,
+      ),
+        storeTextStyle: NativeTextStyle(
+          fontSize: 12,
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 }

@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
@@ -128,7 +128,7 @@ class BannerAdWidgetState extends State<BannerAdWidget>
                                 flex: 1,
                                 child: Container(
                                   alignment: Alignment.centerLeft,
-                                  child: Text(Config.appName,
+                                  child: Text(ConstantConfig.appName,
                                       style: TextStyle(
                                           color: SetColors.black,
                                           fontSize:

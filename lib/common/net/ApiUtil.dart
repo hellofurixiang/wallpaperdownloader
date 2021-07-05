@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/net/NetUtil.dart';
 
 ///方法
@@ -7,7 +7,7 @@ class ApiUtil {
   ///获取列表数据
   static void getList(BuildContext context, Map<String, String> params,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'getList';
+    String url = ConstantConfig.address + 'getList';
 
     NetUtil.get(context, url,
         params: params,
@@ -18,7 +18,7 @@ class ApiUtil {
   ///获取列表数据
   static void getSearchList(BuildContext context, Map<String, String> params,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'getSearchList';
+    String url = ConstantConfig.address + 'getSearchList';
 
     NetUtil.get(context, url,
         params: params,
@@ -29,7 +29,7 @@ class ApiUtil {
   ///获取列表数据
   static void getListByCat(BuildContext context, Map<String, String> params,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'getListByCat';
+    String url = ConstantConfig.address + 'getListByCat';
 
     NetUtil.get(context, url,
         params: params,
@@ -39,7 +39,7 @@ class ApiUtil {
 
   static void getCatList(BuildContext context, Map<String, String> params,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'getCatList';
+    String url = ConstantConfig.address + 'getCatList';
 
     NetUtil.get(context, url,
         params: params,
@@ -50,7 +50,7 @@ class ApiUtil {
   ///获取数据
   static void getDetailInfo(BuildContext context, Map<String, String> params,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'getDetailInfo';
+    String url = ConstantConfig.address + 'getDetailInfo';
 
     NetUtil.get(context, url,
         params: params,
@@ -61,7 +61,7 @@ class ApiUtil {
   ///获取数据
   static void changeCollection(BuildContext context, String id,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'changeCollection';
+    String url = ConstantConfig.address + 'changeCollection';
 
     NetUtil.get(context, url,
         params: {'id': id},
@@ -72,7 +72,18 @@ class ApiUtil {
   ///获取数据
   static void removeCollection(BuildContext context, String id,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'removeCollection';
+    String url = ConstantConfig.address + 'removeCollection';
+
+    NetUtil.get(context, url,
+        params: {'id': id},
+        successCallBack: successCallBack,
+        errorCallBack: errorCallBack);
+  }
+
+  ///获取数据
+  static void changeDownload(BuildContext context, String id,
+      Function successCallBack, Function errorCallBack) {
+    String url = ConstantConfig.address + 'changeDownload';
 
     NetUtil.get(context, url,
         params: {'id': id},
@@ -83,7 +94,7 @@ class ApiUtil {
   ///获取下一条数据
   static void getNextOrPrePicInfo(BuildContext context, Map<String, Object> params,
       Function successCallBack, Function errorCallBack) {
-    String url = Config.address + 'getNextOrPrePicInfo';
+    String url = ConstantConfig.address + 'getNextOrPrePicInfo';
 
     NetUtil.get(context, url,
         params: params,

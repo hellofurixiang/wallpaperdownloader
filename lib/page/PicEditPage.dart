@@ -7,8 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:wallpaper_manager/wallpaper_manager.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
 import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
@@ -37,6 +37,7 @@ class PicEditPageState extends State<PicEditPage>
     with SingleTickerProviderStateMixin {
   AnimationController _controller;
   WatchAdProvider watchAdProvider = new WatchAdProvider();
+
   @override
   void initState() {
     _controller = AnimationController(
@@ -85,16 +86,26 @@ class PicEditPageState extends State<PicEditPage>
 
         if (result == null || result == '') throw '图片保存失败';
 
-        String re = await WallpaperManager.setWallpaperFromFile(
+        /*String re = await WallpaperManager.setWallpaperFromFile(
             result['filePath'].toString().replaceAll('file://', ''),
-            WallpaperManager.BOTH_SCREENS);
+            WallpaperManager.BOTH_SCREENS);*/
 
-        if (re == 'Wallpaper set') {
+        String filePath =
+            result['filePath'].toString().replaceAll('file://', '');
+
+        File file = File(filePath);
+
+        int location = WallpaperManagerFlutter.HOME_SCREEN; //Choose screen type
+
+        await WallpaperManagerFlutter().setwallpaperfromFile(file, location);
+
+        /*if (re == 'Wallpaper set') {
           WidgetUtil.showToast(msg: 'Set wallpaper successfully');
         } else {
           WidgetUtil.showToast(msg: 'Set wallpaper error');
-        }
+        }*/
         Navigator.pop(context);
+        WidgetUtil.showToast(msg: 'Set wallpaper successfully');
       });
     } catch (e) {
       WidgetUtil.showToast(msg: 'Set wallpaper error!');
@@ -112,8 +123,6 @@ class PicEditPageState extends State<PicEditPage>
       cropImage();
     });
   }*/
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -150,18 +159,20 @@ class PicEditPageState extends State<PicEditPage>
                 //显示对话框
                 WidgetUtil.showAlertDialog(
                     context, 'Set this image as wallpaper?', () {
+                  //cropImage();
                   WidgetUtil.showAd(context, watchAdProvider, cropImage);
                 });
               },
               child: Container(
                   height: 50.0,
-                  margin: EdgeInsets.only(left:15.0,right: 10.0),
+                  margin: EdgeInsets.only(left: 15.0, right: 10.0),
                   alignment: Alignment.center,
                   child: Text(
                     'Apply',
                     style: TextStyle(
-                        color: SetColors.white,
-                        fontSize: SetConstants.lagerTextSize,),
+                      color: SetColors.white,
+                      fontSize: SetConstants.lagerTextSize,
+                    ),
                   )),
             ),
           ),
@@ -171,8 +182,7 @@ class PicEditPageState extends State<PicEditPage>
   }
 
   Widget getEditImgWidget() {
-
-    String imgPath = Config.downloadUrl +
+    String imgPath = ConstantConfig.downloadUrl +
         widget.picInfo.fileName +
         '.' +
         //'_preview.' +
@@ -270,10 +280,10 @@ class PicEditPageState extends State<PicEditPage>
         );
         break;
 
-    ///if you don't want override completed widget
-    ///please return null or state.completedWidget
-    //return null;
-    //return state.completedWidget;
+      ///if you don't want override completed widget
+      ///please return null or state.completedWidget
+      //return null;
+      //return state.completedWidget;
       case LoadState.completed:
         _controller.forward();
         return FadeTransition(

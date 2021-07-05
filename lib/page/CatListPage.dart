@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_native_admob/flutter_native_admob.dart';
 import 'package:flutter_native_admob/native_admob_options.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:wallpaperdownloader/common/config/Config.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/modal/CatInfo.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
@@ -129,32 +129,17 @@ class CatListPageState extends State<CatListPage> {
 
                       if (imgList[i].topId == '-1') {
                         return Container(
+                          //color:SetColors.white,
                           height: MediaQuery.of(context).size.height / 3,
                           width: MediaQuery.of(context).size.width,
                           //padding: EdgeInsets.all(10),
-                          //margin: EdgeInsets.only(bottom: 20.0),
+                          margin: EdgeInsets.all(10.0),
                           alignment: Alignment.center,
-                          child: NativeAdmob(
-                            loading: Center(
-                              child: CircularProgressIndicator(
-                                color: SetColors.white,
-                              ),
-                            ),
-                            adUnitID: AdMobService.nativeAdGeneralUnitId,
-                            numberAds: 5,
-                            //controller: _nativeAdController,
-                            type: NativeAdmobType.full,
-                            options: NativeAdmobOptions(
-                              headlineTextStyle: NativeTextStyle(
-                                fontSize: 16,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
+                          child: WidgetUtil.createNativeAdmob(NativeAdmobType.full),
                         );
                       }
 
-                      String imgPath = Config.downloadUrl +
+                      String imgPath = ConstantConfig.downloadUrl +
                           imgList[i].fileName +
                           '_thumbnail.' +
                           imgList[i].type;
