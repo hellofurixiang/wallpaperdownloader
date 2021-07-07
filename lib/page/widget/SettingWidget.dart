@@ -53,7 +53,7 @@ class SettingWidgetState extends State<SettingWidget> {
                       children: [
                         Container(
                           child: Image.asset(
-                            'assets/ic_launcher.png',
+                            'assets/icon.png',
                             //color: SetColors.white,
                             width: 60.0,
                             height: 60.0,

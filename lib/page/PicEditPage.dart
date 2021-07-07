@@ -129,14 +129,18 @@ class PicEditPageState extends State<PicEditPage>
     });
   }*/
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+
   @override
   Widget build(BuildContext context) {
     cropAspectRatio =
         MediaQuery.of(context).size.width / MediaQuery.of(context).size.height;
     //String imgPath = Config.address + 'getFullFileBytesStr?id=' + widget.id;
 
-    return new Scaffold(
+    return Scaffold(
       backgroundColor: SetColors.black,
+      key:_scaffoldKey,
       body: Stack(
         alignment: Alignment.center,
         fit: StackFit.expand, //未定位widget占满Stack整个空间

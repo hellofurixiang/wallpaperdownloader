@@ -134,7 +134,6 @@ class MainPageState extends State<MainPage>
         key: _scaffoldKey,
         //appBar: AppBar(),
         body: SafeArea(
-          top: true,
           child: Column(
             children: [
               MainTopWidget(),

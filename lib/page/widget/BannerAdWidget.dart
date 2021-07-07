@@ -99,7 +99,7 @@ class BannerAdWidgetState extends State<BannerAdWidget>
                       Container(
                         height: 80.0,
                         child: Image.asset(
-                          'assets/ic_launcher.png',
+                          'assets/icon.png',
                           //color: SetColors.white,
                           width: 80.0,
                           height: 80.0,

@@ -81,6 +81,7 @@ class CatListPageState extends State<CatListPage> {
     initData(page);
   }
 
+  int nativeAdCount=0;
   ///成功方法处理
   void successCallBack(res) {
     if (res[ConstantConfig.code] == '1') {
@@ -93,6 +94,15 @@ class CatListPageState extends State<CatListPage> {
           imgList.add(CatInfo.fromJson(res[ConstantConfig.resBody][i]));
           if ((i >= 2) && (i % 2 == 0)) {
             imgList.add(CatInfo.nativeAd('-1'));
+          }
+
+          if (imgList.length == 3) {
+            imgList.add(CatInfo.nativeAd('-1'));
+            nativeAdCount += 1;
+          } else if (imgList.length > 3 &&
+              (imgList.length - nativeAdCount) % 3 == 0) {
+            imgList.add(CatInfo.nativeAd('-1'));
+            nativeAdCount += 1;
           }
         }
       });
