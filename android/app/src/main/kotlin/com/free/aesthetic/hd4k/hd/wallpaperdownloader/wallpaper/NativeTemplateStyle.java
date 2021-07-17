@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package com.free.aesthetic.wallpaper.hd4k.hd.wallpaperdownloader;
+package com.free.aesthetic.hd4k.hd.wallpaperdownloader.wallpaper;
 
 import android.graphics.Typeface;
 import android.graphics.drawable.ColorDrawable;

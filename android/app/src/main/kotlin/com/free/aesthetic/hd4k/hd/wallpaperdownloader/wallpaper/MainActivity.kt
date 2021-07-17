@@ -1,9 +1,7 @@
-package com.free.aesthetic.wallpaper.hd4k.hd.wallpaperdownloader
+package com.free.aesthetic.hd4k.hd.wallpaperdownloader.wallpaper
 
-import com.free.aesthetic.wallpaper.hd4k.hd.wallpaperdownloader.plugin.equipment.EquipmentPlugin
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
-import io.flutter.plugins.googlemobileads.GoogleMobileAdsPlugin
 
 class MainActivity: FlutterActivity() {
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {

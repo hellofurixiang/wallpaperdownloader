@@ -7,27 +7,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
 import 'package:wallpaperdownloader/common/db/provider/WatchAdProvider.dart';
-import 'package:wallpaperdownloader/common/local/GlobalInfo.dart';
 import 'package:wallpaperdownloader/common/modal/PicInfo.dart';
-import 'package:wallpaperdownloader/common/modal/WatchAdEntity.dart';
 import 'package:wallpaperdownloader/common/net/ApiUtil.dart';
 import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
 import 'package:wallpaperdownloader/common/utils/crop_editor_helper.dart';
-import 'package:wallpaperdownloader/common/utils/AdMobService.dart';
 
 class PicEditPage extends StatefulWidget {
   final PicInfo picInfo;
-  final String localImgUrl;
 
   const PicEditPage({
     Key key,
     this.picInfo,
-    this.localImgUrl,
   }) : super(key: key);
 
   @override
@@ -69,7 +65,9 @@ class PicEditPageState extends State<PicEditPage>
         ? (await cropImageDataWithDartLibrary(state: editorKey.currentState))
         : (await cropImageDataWithNativeLibrary(
             state: editorKey.currentState)));
-
+    ProgressDialog progressDialog =
+        new ProgressDialog(context, isDismissible: false);
+    progressDialog.style(message: 'Set wallpaper...');
     try {
       /// 权限检测
       PermissionStatus storageStatus = await Permission.storage.status;
@@ -80,7 +78,10 @@ class PicEditPageState extends State<PicEditPage>
         }
       }
 
-      WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+      //WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+
+      progressDialog.show();
+
       Future.delayed(Duration(milliseconds: 500), () async {
         /// 保存图片
         final result = await ImageGallerySaver.saveImage(fileData);
@@ -106,13 +107,18 @@ class PicEditPageState extends State<PicEditPage>
           WidgetUtil.showToast(msg: 'Set wallpaper error');
         }*/
 
-        ApiUtil.changeSetWallpaperCount(context, widget.picInfo.id, (res) async {}, (err) {});
+        ApiUtil.changeSetWallpaperCount(
+            context, widget.picInfo.id, (res) async {}, (err) {});
 
-        Navigator.pop(context);
+        if (progressDialog.isShowing()) {
+          progressDialog.hide();
+        }
         WidgetUtil.showToast(msg: 'Set wallpaper successfully');
       });
     } catch (e) {
-      Navigator.pop(context);
+      if (progressDialog.isShowing()) {
+        progressDialog.hide();
+      }
       WidgetUtil.showToast(msg: 'Set wallpaper error!');
       //print(e.toString());
     }
@@ -131,7 +137,6 @@ class PicEditPageState extends State<PicEditPage>
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-
   @override
   Widget build(BuildContext context) {
     cropAspectRatio =
@@ -140,7 +145,7 @@ class PicEditPageState extends State<PicEditPage>
 
     return Scaffold(
       backgroundColor: SetColors.black,
-      key:_scaffoldKey,
+      key: _scaffoldKey,
       body: Stack(
         alignment: Alignment.center,
         fit: StackFit.expand, //未定位widget占满Stack整个空间
@@ -222,9 +227,13 @@ class PicEditPageState extends State<PicEditPage>
               .withOpacity(pointerDown ? 0.1 : 0.2);
         });
 
-    if (widget.localImgUrl != null) {
+    String filePath =
+        '${ConstantConfig.saveImageDirForAndroid}/${widget.picInfo.fileName}.${widget.picInfo.type}';
+
+    File file = File(filePath);
+    if (file.existsSync()) {
       return ExtendedImage.file(
-        File(widget.localImgUrl),
+        file,
         fit: BoxFit.contain,
         mode: ExtendedImageMode.editor,
         extendedImageEditorKey: editorKey,

@@ -6,6 +6,7 @@ import 'package:wallpaperdownloader/common/style/Styles.dart';
 import 'package:wallpaperdownloader/common/utils/CommonUtil.dart';
 import 'package:wallpaperdownloader/common/utils/TelAndSmsService.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
+import 'package:wallpaperdownloader/page/DownloadPicListPage.dart';
 import 'package:wallpaperdownloader/page/FavoritePage.dart';
 import 'package:wallpaperdownloader/page/SettingPage.dart';
 
@@ -53,7 +54,7 @@ class SettingWidgetState extends State<SettingWidget> {
                       children: [
                         Container(
                           child: Image.asset(
-                            'assets/icon.png',
+                            'assets/ic_launcher.png',
                             //color: SetColors.white,
                             width: 60.0,
                             height: 60.0,
@@ -135,30 +136,6 @@ class SettingWidgetState extends State<SettingWidget> {
                               ),
                             ),
                           ),
-                          /*Container(
-                            alignment: Alignment.centerLeft,
-                            height: 40.0,
-                            padding: EdgeInsets.only(left: 5.0),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.label,
-                                  size: 30,
-                                  color: SetColors.darkDarkGrey,
-                                ),
-                                Container(
-                                  margin: EdgeInsets.only(left: 20.0),
-                                  child: Text(
-                                    'Explore',
-                                    style: TextStyle(
-                                        fontSize: SetConstants.normalTextSize,
-                                        color: SetColors.black,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),*/
                           GestureDetector(
                             onTap: () {
                               Navigator.pop(context);
@@ -184,7 +161,43 @@ class SettingWidgetState extends State<SettingWidget> {
                                   Container(
                                     margin: EdgeInsets.only(left: 20.0),
                                     child: Text(
-                                      'Favorite',
+                                      'My Favorite',
+                                      style: TextStyle(
+                                          fontSize: SetConstants.normalTextSize,
+                                          //fontWeight: FontWeight.bold,
+                                          color: SetColors.white),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.pop(context);
+                              Navigator.push(context,
+                                  MaterialPageRoute(builder: (context) {
+                                    return DownloadPicListPage();
+                                  }));
+                            },
+                            child: Container(
+                              color: SetColors.transparent,
+                              alignment: Alignment.centerLeft,
+                              height: 60.0,
+                              padding: EdgeInsets.only(left: 5.0),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    width: 40.0,
+                                    child: SvgPicture.asset('assets/download.svg',
+                                        width: 25.0,
+                                        height: 25.0,
+                                        color: SetColors.white),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(left: 20.0),
+                                    child: Text(
+                                      'My Download',
                                       style: TextStyle(
                                           fontSize: SetConstants.normalTextSize,
                                           //fontWeight: FontWeight.bold,

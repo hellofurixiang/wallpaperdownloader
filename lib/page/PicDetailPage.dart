@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:progress_dialog/progress_dialog.dart';
 import 'package:share/share.dart';
 import 'package:wallpaper_manager_flutter/wallpaper_manager_flutter.dart';
 import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
@@ -60,8 +61,7 @@ class PicDetailPageState extends State<PicDetailPage>
   ///加载状态
   bool isLoad = true;
 
-  ///本地图片路径
-  String localImgUrl;
+  String filePath;
 
   @override
   void initState() {
@@ -123,6 +123,8 @@ class PicDetailPageState extends State<PicDetailPage>
               //advertisingBo = false;
             }
           }
+          filePath =
+              '${ConstantConfig.saveImageDirForAndroid}/${picInfo.fileName}.${picInfo.type}';
         });
       } else {
         WidgetUtil.showToast(msg: res[ConstantConfig.message]);
@@ -184,19 +186,26 @@ class PicDetailPageState extends State<PicDetailPage>
     }
   }
 
+  //double currentProgress = 0.0;
+
   ///下载操作
   downloadFile() async {
-    WidgetUtil.showLoadingDialog(context, text: 'download...');
-    //GlobalInfo.instance.setShowBannerAdState(2);
-    String downloadUrl = await CommonUtil.saveImage(context, fullPath);
-    if (downloadUrl.isEmpty) {
-      return;
+    File file = File(filePath);
+    if (file.existsSync()) {
+      WidgetUtil.showToast(msg: 'Pictures have been downloaded');
+    } else {
+      String newFilePath = await CommonUtil.saveImage(
+          context, fullPath, picInfo.fileName, picInfo.type);
+      if (newFilePath == null) {
+        return;
+      }
+      setState(() {
+        filePath = newFilePath;
+      });
+      ApiUtil.changeDownload(context, picInfo.id, (res) async {}, (err) {});
+      EquipmentPlugin.editImg('file://' + newFilePath);
+      await EquipmentPlugin.sendBroadcast(filePath);
     }
-    setState(() {
-      localImgUrl = downloadUrl.replaceAll('file://', '');
-    });
-    ApiUtil.changeDownload(context, picInfo.id, (res) async {}, (err) {});
-    EquipmentPlugin.editImg(downloadUrl);
   }
 
   Widget getOperWidget() {
@@ -255,6 +264,9 @@ class PicDetailPageState extends State<PicDetailPage>
             flex: 1,
             child: GestureDetector(
               onTap: () {
+
+                //downloadFile();
+
                 WidgetUtil.showConfirmDialog(
                     context, 'Are you sure want to download this wallpaper?',
                     () async {
@@ -319,44 +331,20 @@ class PicDetailPageState extends State<PicDetailPage>
       //setWallpaper();
       WidgetUtil.showAd(context, watchAdProvider, setWallpaper);
     });
-
-    /*WidgetUtil.showAlertDialog(context, 'Set this image as wallpaper?',
-        () async {
-      WidgetUtil.showLoadingDialog(context, text: 'Loading ads...');
-      GlobalInfo.instance.setShowBannerAdState(1);
-      AdMobService.showRewardedAd(context, () async {
-        GlobalInfo.instance.setShowBannerAdState(2);
-        WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
-        String re = await Wallpaper.bothScreen(imgPath);
-        if (re == 'Both screen') {
-          WidgetUtil.showToast(msg: 'Set wallpaper successfully');
-        } else {
-          WidgetUtil.showToast(msg: 'Set wallpaper error');
-        }
-        Navigator.pop(context);
-      });
-    });*/
   }
 
   ///设置壁纸
   setWallpaper() async {
-    WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+    //WidgetUtil.showLoadingDialog(context, text: 'Set wallpaper...');
+
+    ProgressDialog progressDialog = new ProgressDialog(context,isDismissible: false);
+    progressDialog.style(message: 'Set wallpaper...');
+    progressDialog.show();
+
     Future.delayed(Duration(milliseconds: 500), () async {
       try {
-        String re;
-        if (localImgUrl != null) {
-          /*re = await WallpaperManager.setWallpaperFromFile(
-            localImgUrl, WallpaperManager.BOTH_SCREENS);
-        if (re == 'Wallpaper set') {
-          Navigator.pop(context);
-          WidgetUtil.showToast(msg: 'Set wallpaper successfully');
-        } else {
-          Navigator.pop(context);
-          WidgetUtil.showToast(msg: 'Set wallpaper error');
-        }*/
-
-          File file = File(localImgUrl);
-
+        File file = File(filePath);
+        if (file.existsSync()) {
           int location =
               WallpaperManagerFlutter.HOME_SCREEN; //Choose screen type
 
@@ -368,7 +356,8 @@ class PicDetailPageState extends State<PicDetailPage>
           int location =
               WallpaperManagerFlutter.HOME_SCREEN; //Choose screen type
 
-          await WallpaperManagerFlutter().setwallpaperfromFile(cachedimage, location);
+          await WallpaperManagerFlutter()
+              .setwallpaperfromFile(cachedimage, location);
 
           //re = await Wallpaper.bothScreen(fullPath);
 
@@ -383,11 +372,17 @@ class PicDetailPageState extends State<PicDetailPage>
           WidgetUtil.showToast(msg: 'Set wallpaper error');
         });*/
         }
-        ApiUtil.changeSetWallpaperCount(context, picInfo.id, (res) async {}, (err) {});
-        Navigator.pop(context);
+        ApiUtil.changeSetWallpaperCount(
+            context, picInfo.id, (res) async {}, (err) {});
+        if(progressDialog.isShowing()){
+          progressDialog.hide();
+        }
+        //Navigator.pop(context);
         WidgetUtil.showToast(msg: 'Set wallpaper successfully');
       } catch (e) {
-        Navigator.pop(context);
+        if(progressDialog.isShowing()){
+          progressDialog.hide();
+        }
         WidgetUtil.showToast(msg: 'Set wallpaper error');
       }
     });
@@ -396,7 +391,6 @@ class PicDetailPageState extends State<PicDetailPage>
   goToEdit() {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
       return PicEditPage(
-        localImgUrl: localImgUrl,
         picInfo: picInfo,
       );
     }));
@@ -473,6 +467,40 @@ class PicDetailPageState extends State<PicDetailPage>
     }
   }
 
+  getMainWidget() {
+    if (isLoad) {
+      return WidgetUtil.getEmptyLoadingWidget();
+    }
+
+    File file = File(filePath);
+    if (file.existsSync()) {
+      return ExtendedImage.file(
+        file,
+        fit: BoxFit.contain,
+        mode: ExtendedImageMode.gesture,
+        initGestureConfigHandler: (ExtendedImageState state) {
+          return initGestureConfigHandler(state);
+        },
+        loadStateChanged: (ExtendedImageState state) {
+          return loadStateChanged(state);
+        },
+      );
+    } else {
+      return ExtendedImage.network(
+        imgPath,
+        //fit: BoxFit.contain,
+        mode: ExtendedImageMode.gesture,
+        cache: true,
+        initGestureConfigHandler: (ExtendedImageState state) {
+          return initGestureConfigHandler(state);
+        },
+        loadStateChanged: (ExtendedImageState state) {
+          return loadStateChanged(state);
+        },
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -481,30 +509,7 @@ class PicDetailPageState extends State<PicDetailPage>
         alignment: Alignment.center,
         fit: StackFit.expand, //未定位widget占满Stack整个空间
         children: <Widget>[
-          isLoad
-              ? WidgetUtil.getEmptyLoadingWidget()
-              : (localImgUrl != null
-                  ? ExtendedImage.file(
-                      File(localImgUrl),
-                      fit: BoxFit.contain,
-                      mode: ExtendedImageMode.gesture,
-                      initGestureConfigHandler: (ExtendedImageState state) {
-                        return initGestureConfigHandler(state);
-                      },
-                      loadStateChanged: (ExtendedImageState state) {
-                        return loadStateChanged(state);
-                      },
-                    )
-                  : ExtendedImage.network(
-                      imgPath,
-                      //fit: BoxFit.contain,
-                      mode: ExtendedImageMode.gesture,
-                      cache: true,
-                      initGestureConfigHandler: (ExtendedImageState state) {
-                        return initGestureConfigHandler(state);
-                      },
-                      loadStateChanged: (ExtendedImageState state){return loadStateChanged(state);},
-                    )),
+          getMainWidget(),
           Positioned(
             top: CommonUtil.getStatusBarHeight(context) + 10.0,
             left: 10.0,

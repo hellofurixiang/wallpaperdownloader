@@ -58,7 +58,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     int rng = new Random().nextInt(5);
-    String path = 'assets/ic_splash_$rng.webp';
+    String path = 'assets/$rng.webp';
 
     return Stack(
       fit: StackFit.expand,

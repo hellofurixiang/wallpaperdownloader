@@ -1,17 +1,20 @@
-import 'dart:typed_data';
-
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:device_info/device_info.dart';
-import 'package:flutter/material.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'dart:convert';
 
 /// 使用 File api
 import 'dart:io';
+import 'dart:typed_data';
 
-/// 使用 DefaultCacheManager 类（可能无法自动引入，需要手动引入）
-import 'package:flutter_cache_manager/flutter_cache_manager.dart';
+import 'package:device_info/device_info.dart';
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:progress_dialog/progress_dialog.dart';
+import 'package:wallpaperdownloader/common/config/ConstantConfig.dart';
+import 'package:wallpaperdownloader/common/net/Code.dart';
 import 'package:wallpaperdownloader/common/utils/WidgetUtil.dart';
+import 'package:wallpaperdownloader/common/utils/plugin/EquipmentPlugin.dart';
 
 ///通用逻辑
 class CommonUtil {
@@ -52,55 +55,69 @@ class CommonUtil {
   /// 保存图片到相册
   ///
   ///下载网络图片
-  static Future<String> saveImage(BuildContext context, String imageUrl) async {
-    try {
-      /// 权限检测
-      PermissionStatus storageStatus = await Permission.storage.status;
+  static Future<String> saveImage(BuildContext context, String imageUrl,
+      String fileName, String type) async {
+    /// 权限检测
+    PermissionStatus storageStatus = await Permission.storage.status;
+    if (storageStatus != PermissionStatus.granted) {
+      storageStatus = await Permission.storage.request();
       if (storageStatus != PermissionStatus.granted) {
-        storageStatus = await Permission.storage.request();
-        if (storageStatus != PermissionStatus.granted) {
-          throw '无法存储图片，请先授权！';
-        }
+        WidgetUtil.showToast(
+            msg: 'Cannot save picture, please authorize first！');
+        return null;
       }
+    }
+    ProgressDialog progressDialog = new ProgressDialog(context,
+        type: ProgressDialogType.Download, isDismissible: false);
+    progressDialog.style(message: 'Downloading...');
+    try {
+      ///创建DIO
+      Dio dio = new Dio();
 
-      /// 保存的图片数据
-      Uint8List imageBytes;
+      await Directory(ConstantConfig.saveImageDirForAndroid).create();
 
-      /// 保存网络图片
-      CachedNetworkImage image = CachedNetworkImage(imageUrl: imageUrl);
-      DefaultCacheManager manager = image.cacheManager ?? DefaultCacheManager();
-      Map<String, String> headers = image.httpHeaders;
-      File file = await manager.getSingleFile(
-        image.imageUrl,
-        headers: headers,
-      );
-      imageBytes = await file.readAsBytes();
+      String filePath =
+          '${ConstantConfig.saveImageDirForAndroid}/$fileName.$type';
 
-      /// 保存图片
-      final result = await ImageGallerySaver.saveImage(imageBytes);
+      progressDialog.update(progress: 0.0);
 
-      if (result == null || result == '') throw '图片保存失败';
-      Navigator.pop(context);
+      progressDialog.show();
+
+      ///参数一 文件的网络储存URL
+      ///参数二 下载的本地目录文件
+      ///参数三 下载监听
+      Response response = await dio.download(imageUrl, filePath,
+          onReceiveProgress: (received, total) {
+        if (total != -1) {
+          progressDialog.update(
+              progress: received.toDouble(), maxProgress: total.toDouble());
+        }
+      });
+
+      progressDialog.hide();
+
+      if (response.statusCode != Code.SUCCESS) {
+        throw '图片保存失败';
+      }
 
       WidgetUtil.showToast(msg: 'Download successful');
 
-
-
-      return result['filePath'].toString();
-
-
+      return filePath;
     } catch (e) {
-      Navigator.pop(context);
+      if (progressDialog.isShowing()) {
+        progressDialog.hide();
+      }
+      //Navigator.pop(context);
+      WidgetUtil.showToast(
+          msgType: ConstantConfig.error, msg: 'Download error');
       //print(e.toString());
     }
     return null;
   }
 
-
-  void Devinfo() async{
+  void Devinfo() async {
     DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-
 
     IosDeviceInfo iosDeviceInfo = await deviceInfo.iosInfo;
     print(iosDeviceInfo.identifierForVendor);
@@ -119,4 +136,13 @@ class CommonUtil {
     // print(androidInfo.product); //整个产品的名称
   }
 
+  static Uint8List encode(String s) {
+    var encodedString = utf8.encode(s);
+    var encodedLength = encodedString.length;
+    var data = ByteData(encodedLength + 4);
+    data.setUint32(0, encodedLength, Endian.big);
+    var bytes = data.buffer.asUint8List();
+    bytes.setRange(4, encodedLength + 4, encodedString);
+    return bytes;
+  }
 }

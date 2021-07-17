@@ -1,9 +1,7 @@
 class ConstantConfig {
-  //static const address = 'http://192.168.1.21:8088/api/app/picInfo/';
-  //static const address = 'http://192.168.48.192:8088/api/app/picInfo/';
-  static const String address = 'http://47.251.45.10:8900/api/app/picInfo/';
+  static const String address = 'http://api.hdwallpaper4k.com:8900/api/app/picInfo/';
 
-  static const String downloadUrl = 'http://dl.followerstiktok.com/bucket/img/';
+  static const String downloadUrl = 'http://dl.hdwallpaper4k.com/bucket/img/';
 
   ///主类型
   static const String primaryType = 'application';
@@ -31,8 +29,14 @@ class ConstantConfig {
   ///标准屏幕宽度
   static const int screenWidth = 600;
 
-  static const String versionName = 'V1.09';
+  static const String versionName = 'V1.13';
   static const String appName = 'Wallpaper HD';
+
+
+  static const String saveImageDirForAndroid = '/storage/emulated/0/Wallpaper HD';
+
+
+
 
   static const String mainPage = 'MainPage';
 
@@ -42,7 +46,7 @@ class ConstantConfig {
   static const String emailUrl='qiangzi1688@gmail.com';
 
 
-  static const String shareStr='Wallpaper HD - Unique collection of 4K and Live Wallpapers.Available on Play Store,Download Now - https://play.google.com/store/apps/details?id=com.hdwallpaper.wallpaper';
+  static const String shareStr='Wallpaper HD - Unique collection of 4K and Live Wallpapers.Available on Play Store,Download Now - https://play.google.com/store/apps/details?id=com.free.aesthetic.hd4k.hd.wallpaperdownloader.wallpaper';
 
 
   ///列表加载广告间隔数

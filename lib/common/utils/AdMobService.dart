@@ -130,7 +130,7 @@ class AdMobService {
         // Called when an ad is successfully received.
         onAdLoaded: (Ad ad) {
           LogUtils.i(logTag, 'Ad loaded.');
-          Navigator.pop(context);
+          //Navigator.pop(context);
           rewardedAd.show();
           if(onAdLoad!=null){
             onAdLoad();

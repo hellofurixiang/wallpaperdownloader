@@ -16,12 +16,21 @@ class PopupMenuWidget extends StatefulWidget {
 
   final bool infoOffstage;
 
+  final Color containerColor;
+
+  final Color fontColor;
+  final bool isCenter;
+
   PopupMenuWidget(
       {Key key,
       @required this.itemList,
       @required this.callBack,
       this.x,
-      this.y, this.infoOffstage})
+      this.y,
+      this.infoOffstage: true,
+      this.containerColor: SetColors.white,
+      this.fontColor: SetColors.mainColor,
+      this.isCenter: false})
       : super(key: key);
 
   @override
@@ -45,12 +54,13 @@ class PopupMenuWidgetState extends State<PopupMenuWidget> {
           widget.callBack(i);
         },
         child: new Container(
-          color: SetColors.white,
+          color: widget.containerColor,
           alignment: Alignment.center,
           height: height,
           child: new Text(
             widget.itemList[i],
-            style: new TextStyle(fontSize: SetConstants.normalTextSize,color: SetColors.mainColor),
+            style: new TextStyle(
+                fontSize: SetConstants.normalTextSize, color: widget.fontColor),
           ),
         ),
       ));
@@ -78,17 +88,30 @@ class PopupMenuWidgetState extends State<PopupMenuWidget> {
               width: width,
             ),
           ),
-          new Positioned(
-            right:  60.0,
-            bottom: 70.0+(widget.infoOffstage?0:70),
-            child: new Container(
-              alignment: Alignment.center,
-              color: Colors.white,
-              width: 120.0,
-              height: height * widget.itemList.length,
-              child: getItemList(),
-            ),
-          ),
+          widget.isCenter
+              ? Positioned(
+            left:0,
+                  top: CommonUtil.getScreenHeight(context) * 0.5 -
+                      height * widget.itemList.length,
+                  child: new Container(
+                    alignment: Alignment.center,
+                    color: widget.containerColor,
+                    width: CommonUtil.getScreenWidth(context),
+                    height: height * widget.itemList.length,
+                    child: getItemList(),
+                  ),
+                )
+              : Positioned(
+                  right: 60.0,
+                  bottom: 70.0 + (widget.infoOffstage ? 0 : 70),
+                  child: new Container(
+                    alignment: Alignment.center,
+                    color: widget.containerColor,
+                    width: 120.0,
+                    height: height * widget.itemList.length,
+                    child: getItemList(),
+                  ),
+                ),
         ],
       ),
     );

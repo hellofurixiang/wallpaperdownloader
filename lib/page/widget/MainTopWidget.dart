@@ -28,8 +28,8 @@ extension on Availability {
 class MainTopWidgetState extends State<MainTopWidget> {
 
   final InAppReview _inAppReview = InAppReview.instance;
-  String _appStoreId = 'com.hdwallpaper.wallpaper';//'com.free.aesthetic.wallpaper.hd4k.hd.wallpaperdownloader';
-  String _microsoftStoreId = 'com.hdwallpaper.wallpaper';
+  String _appStoreId = 'com.free.aesthetic.hd4k.hd.wallpaperdownloader.wallpaper';//'com.free.aesthetic.hd4k.hd.wallpaperdownloader.wallpaper';
+  String _microsoftStoreId = 'com.free.aesthetic.hd4k.hd.wallpaperdownloader.wallpaper';
   Availability _availability = Availability.LOADING;
 
 
@@ -51,12 +51,6 @@ class MainTopWidgetState extends State<MainTopWidget> {
       }
     });
   }
-
-  void _setAppStoreId(String id) => _appStoreId = id;
-
-  void _setMicrosoftStoreId(String id) => _microsoftStoreId = id;
-
-  Future<void> _requestReview() => _inAppReview.requestReview();
 
   Future<void> _openStoreListing() => _inAppReview.openStoreListing(
     appStoreId: _appStoreId,

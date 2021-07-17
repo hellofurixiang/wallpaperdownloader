@@ -54,5 +54,7 @@
 	<string>ca-app-pub-3366457228211858~1816264847</string>
 	<key>io.flutter.embedded_views_preview</key>
     <true/>
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Your consent is required for the APP to access the album</string>
 </dict>
 </plist>
