@@ -29,7 +29,7 @@ class ConstantConfig {
   ///标准屏幕宽度
   static const int screenWidth = 600;
 
-  static const String versionName = 'V1.13';
+  static const String versionName = 'V1.16';
   static const String appName = 'Wallpaper HD';
 
 

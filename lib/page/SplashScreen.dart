@@ -20,20 +20,21 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   InterstitialAd interstitialAd;
   Timer timer;
+
   startTime() async {
     ///设置启动图生效时间
     Duration _duration = new Duration(seconds: 8);
-    timer= new Timer(_duration,  navigationPage);
+    timer = new Timer(_duration, navigationPage);
   }
 
   void showInterstitialAd() {
-    AdMobService.showInterstitialAd(
-        onAdLoaded: () {
-          timer.cancel();
-        },
-        onAdClosed: () {
-          navigationPage();
-        });
+    AdMobService.showInterstitialAd(onAdLoaded: () {
+      timer.cancel();
+    }, onAdClosed: () {
+      navigationPage();
+    }, onAdFailedToLoad: () {
+      navigationPage();
+    });
   }
 
   void navigationPage() {
@@ -43,8 +44,13 @@ class _SplashScreenState extends State<SplashScreen> {
         (route) => route == null); //跳转下一页 并把动画结束
   }
 
+  String path;
+
   @override
   void initState() {
+    int rng = new Random().nextInt(5);
+    path = 'assets/$rng.webp';
+
     super.initState();
     startTime();
     showInterstitialAd();
@@ -57,9 +63,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int rng = new Random().nextInt(5);
-    String path = 'assets/$rng.webp';
-
     return Stack(
       fit: StackFit.expand,
       children: [

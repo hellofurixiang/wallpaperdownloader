@@ -833,6 +833,13 @@ class WidgetUtil {
         GlobalInfo.instance.setWatchDateTime(DateTime.now());
         await watchAdProvider.updateWatchRewardedAd(watchDate);
         operFun();
+      }, onAdFailedToLoad: () async {
+        if (progressDialog.isShowing()) {
+          progressDialog.hide();
+        }
+        GlobalInfo.instance.setWatchDateTime(DateTime.now());
+        await watchAdProvider.updateWatchRewardedAd(watchDate);
+        operFun();
       });
     } else {
       AdMobService.showInterstitialAd(onAdLoaded: () {
@@ -841,6 +848,12 @@ class WidgetUtil {
         }
         //Navigator.pop(context);
       }, onAdClosed: () async {
+        await watchAdProvider.updateWatchInterstitialAd(watchDate);
+        operFun();
+      }, onAdFailedToLoad: () async {
+        if (progressDialog.isShowing()) {
+          progressDialog.hide();
+        }
         await watchAdProvider.updateWatchInterstitialAd(watchDate);
         operFun();
       });

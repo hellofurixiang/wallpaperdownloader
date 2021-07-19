@@ -30,8 +30,10 @@ class AdMobService {
   ///插页式激励广告	ca-app-pub-3940256099942544/5354046379
   ///原生高级广告	ca-app-pub-3940256099942544/2247696110
   ///原生高级视频广告	ca-app-pub-3940256099942544/1044960115
-  static String nativeAdGeneralUnitId='ca-app-pub-3940256099942544/2247696110';
-  static String nativeAdUnitId='ca-app-pub-3940256099942544/1044960115';
+  static String nativeAdGeneralUnitId =
+      'ca-app-pub-3940256099942544/2247696110';
+  static String nativeAdUnitId = 'ca-app-pub-3940256099942544/1044960115';
+
   ///ios
   ///广告格式	演示广告单元 ID
   ///开屏广告	ca-app-pub-3940256099942544/5662855259
@@ -79,7 +81,7 @@ class AdMobService {
 
   ///插页式广告
   static InterstitialAd createInterstitialAd(
-      {Function onAdLoaded, Function onAdClosed}) {
+      {Function onAdLoaded, Function onAdClosed, Function onAdFailedToLoad}) {
     return InterstitialAd(
         adUnitId: InterstitialAd.testAdUnitId,
         listener: AdListener(
@@ -92,6 +94,9 @@ class AdMobService {
             },
             onAdFailedToLoad: (Ad ad, LoadAdError err) {
               interstitialAd.dispose();
+              if (onAdFailedToLoad != null) {
+                onAdFailedToLoad();
+              }
             },
             onAdOpened: (Ad ad) => LogUtils.i(logTag, 'InterstitialAd opened'),
             onAdClosed: (Ad ad) {
@@ -107,18 +112,21 @@ class AdMobService {
         request: AdRequest());
   }
 
-  static void showInterstitialAd({Function onAdLoaded, Function onAdClosed}) {
+  static void showInterstitialAd(
+      {Function onAdLoaded, Function onAdClosed, Function onAdFailedToLoad}) {
     interstitialAd?.dispose();
-    interstitialAd =
-        createInterstitialAd(onAdLoaded: onAdLoaded, onAdClosed: onAdClosed);
+    interstitialAd = createInterstitialAd(
+        onAdLoaded: onAdLoaded,
+        onAdClosed: onAdClosed,
+        onAdFailedToLoad: onAdFailedToLoad);
     interstitialAd.load();
   }
 
   static RewardedAd rewardedAd;
 
   ///激励广告、视频广告
-  static RewardedAd createRewardedAd(
-      BuildContext context, {Function onAdLoad,Function onAdClosed}) {
+  static RewardedAd createRewardedAd(BuildContext context,
+      {Function onAdLoad, Function onAdClosed, Function onAdFailedToLoad}) {
     return RewardedAd(
       adUnitId: RewardedAd.testAdUnitId,
       request: AdRequest(),
@@ -132,15 +140,17 @@ class AdMobService {
           LogUtils.i(logTag, 'Ad loaded.');
           //Navigator.pop(context);
           rewardedAd.show();
-          if(onAdLoad!=null){
+          if (onAdLoad != null) {
             onAdLoad();
           }
         },
         // Called when an ad request failed.
         onAdFailedToLoad: (Ad ad, LoadAdError error) {
           LogUtils.i(logTag, 'Ad failed to load: $error');
-          Navigator.pop(context);
           rewardedAd.dispose();
+          if (onAdFailedToLoad != null) {
+            onAdFailedToLoad();
+          }
         },
         // Called when an ad opens an overlay that covers the screen.
         onAdOpened: (Ad ad) => LogUtils.i(logTag, 'Ad opened.'),
@@ -149,7 +159,7 @@ class AdMobService {
           //ad.
           LogUtils.i(logTag, 'Ad closed.');
           rewardedAd.dispose();
-          if(onAdClosed!=null){
+          if (onAdClosed != null) {
             onAdClosed();
           }
         },
@@ -164,9 +174,13 @@ class AdMobService {
     );
   }
 
-  static void showRewardedAd(BuildContext context, {Function onAdLoad,Function onAdClosed}) {
+  static void showRewardedAd(BuildContext context,
+      {Function onAdLoad, Function onAdClosed, Function onAdFailedToLoad}) {
     rewardedAd?.dispose();
-    rewardedAd = createRewardedAd(context, onAdLoad:onAdLoad,onAdClosed:onAdClosed);
+    rewardedAd = createRewardedAd(context,
+        onAdLoad: onAdLoad,
+        onAdClosed: onAdClosed,
+        onAdFailedToLoad: onAdFailedToLoad);
     rewardedAd.load();
   }
 
